@@ -7,3 +7,11 @@ services:
       - "25565:25565"
       - "8213:8123"
     restart: always
+    volumes:
+      - ./volume-mounts/world:/dpcmcserver/world
+      - ./volume-mounts/world_nether:/dpcmcserver/world_nether
+      - ./volume-mounts/world_the_end:/dpcmcserver/world_the_end
+volumes:
+  world:
+  world_nether:
+  world_the_end:
