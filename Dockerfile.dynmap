@@ -23,17 +23,13 @@ RUN java -jar BuildTools.jar --rev 1.20.4
 RUN echo "eula=true" > eula.txt
 RUN mkdir plugins
 
-# Build Medieval Factions
-RUN git clone https://www.github.com/Dans-Plugins/Medieval-Factions
-WORKDIR /dpcmcserver/Medieval-Factions
-RUN /dpcmcserver/Medieval-Factions/gradlew build
+# Download & install Medieval Factions
+WORKDIR /dpcmcserver/plugins
+RUN wget https://github.com/Dans-Plugins/Medieval-Factions/releases/download/v5.3.0/medieval-factions-5.3.0-all.jar
 WORKDIR /dpcmcserver
 
 # Install Dynmap
 RUN cp /dpcmcserver/dynmap/target/Dynmap-*.jar /dpcmcserver/plugins
-
-# Install Medieval Factions
-RUN cp /dpcmcserver/Medieval-Factions/build/libs/*-all.jar /dpcmcserver/plugins
 
 # Run server
 EXPOSE 25565
