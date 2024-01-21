@@ -1,10 +1,10 @@
 services:
-  testmcserver:
+  dpc-mc-server-with-dynmap:
     build:
       context: .
       dockerfile: Dockerfile.dynmap
-    image: dpc-mc-server
-    container_name: dpc-mc-server
+    image: dpc-mc-server-with-dynmap
+    container_name: dpc-mc-server-with-dynmap
     ports:
       - "25565:25565"
       - "8213:8123"
