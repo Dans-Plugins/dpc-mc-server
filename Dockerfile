@@ -7,17 +7,19 @@ RUN apt-get install -y git \
     openjdk-17-jre \
     wget
 
-# Create server directory
-WORKDIR /dpcmcserver
+# Create directories
+RUN mkdir /dpcmcserver-build /dpcmcserver /dpcmcserver/plugins
 
 # Build server
+WORKDIR /dpcmcserver-build
 RUN wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
 RUN git config --global --unset core.autocrlf || :
 RUN java -jar BuildTools.jar --rev 1.20.4
-RUN echo "eula=true" > eula.txt
-RUN mkdir plugins
 
-# Download & install plugins -----------------------------
+# Copy server JAR
+RUN cp ./spigot-1.20.4.jar /dpcmcserver/spigot-1.20.4.jar
+
+# Download & install community plugins -----------------------------
 WORKDIR /dpcmcserver/plugins
 RUN wget https://github.com/Dans-Plugins/Activity-Tracker/releases/download/1.2.0/ActivityTracker-1.2.0.jar
 RUN wget https://github.com/Dans-Plugins/AlternateAccountFinder/releases/download/2.0.0/AlternateAccountFinder-2.0.0-all.jar
@@ -37,17 +39,19 @@ RUN wget https://github.com/Dans-Plugins/Medieval-Cookery/releases/download/0.1-
 RUN wget https://github.com/Dans-Plugins/Medieval-Economy/releases/download/1.2.0/Medieval-Economy-1.2.0.jar
 RUN wget https://github.com/Dans-Plugins/Medieval-Factions/releases/download/v5.3.0/medieval-factions-5.3.0-all.jar
 RUN wget https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/releases/download/v1.12.0/Medieval-Roleplay-Engine-1.12.0.jar
-# TODO: minifactions?
 RUN wget https://github.com/Dans-Plugins/More-Recipes/releases/download/1.7.0/More-Recipes-1.7.0.jar
 RUN wget https://github.com/Dans-Plugins/Nether-Access-Controller/releases/download/1.1.0/NetherAccessController-1.1.0.jar
 RUN wget https://github.com/Dans-Plugins/NoMoreCreepers/releases/download/1.1.0/NoMoreCreepers-1.1.0.jar
 RUN wget https://github.com/Dans-Plugins/PlayerLore/releases/download/1.1/PlayerLore-1.1.jar
 RUN wget https://github.com/Dans-Plugins/SimpleSkills/releases/download/2.1.0/SimpleSkills-2.1.0.jar
 RUN wget https://github.com/Dans-Plugins/Wild-Pets/releases/download/1.5.1/WildPets-1.5.1.jar
-WORKDIR /dpcmcserver
 # --------------------------------------------------------
+
+# Accept EULA
+WORKDIR /dpcmcserver
+RUN echo "eula=true" > ./eula.txt
 
 # Run server
 EXPOSE 25565
 EXPOSE 8123
-ENTRYPOINT java -jar spigot-1.20.4.jar
+ENTRYPOINT java -jar ./spigot-1.20.4.jar
