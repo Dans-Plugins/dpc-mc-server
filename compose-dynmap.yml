@@ -1,0 +1,11 @@
+services:
+  testmcserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.dynmap
+    image: dpc-mc-server
+    container_name: dpc-mc-server
+    ports:
+      - "25565:25565"
+      - "8213:8123"
+    restart: always
