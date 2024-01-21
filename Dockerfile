@@ -10,6 +10,12 @@ RUN apt-get install -y git \
 # Create server directory
 WORKDIR /dpcmcserver
 
+# Clone & build dynmap (placed here to take advantage of docker caching)
+RUN git clone https://github.com/webbukkit/dynmap
+WORKDIR /dpcmcserver/dynmap
+RUN /dpcmcserver/dynmap/gradlew :spigot:build
+WORKDIR /dpcmcserver
+
 # Build server
 RUN wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
 RUN git config --global --unset core.autocrlf || :
@@ -18,14 +24,18 @@ RUN echo "eula=true" > eula.txt
 RUN mkdir plugins
 
 # Build Medieval Factions
-COPY . /dpcmcserver/MedievalFactions
-WORKDIR /dpcmcserver/MedievalFactions
-RUN /dpcmcserver/MedievalFactions/gradlew build
+RUN git clone https://www.github.com/Dans-Plugins/Medieval-Factions
+WORKDIR /dpcmcserver/Medieval-Factions
+RUN /dpcmcserver/Medieval-Factions/gradlew build
 WORKDIR /dpcmcserver
 
-# Install plugin
-RUN cp /dpcmcserver
+# Install Dynmap
+RUN cp /dpcmcserver/dynmap/target/Dynmap-*.jar /dpcmcserver/plugins
+
+# Install Medieval Factions
+RUN cp /dpcmcserver/Medieval-Factions/build/libs/*-all.jar /dpcmcserver/plugins
 
 # Run server
 EXPOSE 25565
+EXPOSE 8123
 ENTRYPOINT java -jar spigot-1.20.4.jar
