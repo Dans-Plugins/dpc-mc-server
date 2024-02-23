@@ -5,12 +5,9 @@ services:
     container_name: dpc-mc-server
     ports:
       - "25565:25565"
-    restart: always
+    restart: unless-stopped
     volumes:
-      - world:/dpcmcserver/world
-      - world_nether:/dpcmcserver/world_nether
-      - world_the_end:/dpcmcserver/world_the_end
+      - dpcmcserver:/dpcmcserver
+
 volumes:
-  world:
-  world_nether:
-  world_the_end:
+  dpcmcserver:

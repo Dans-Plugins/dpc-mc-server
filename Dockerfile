@@ -8,7 +8,7 @@ RUN apt-get install -y git \
     wget
 
 # Create directories
-RUN mkdir /dpcmcserver-build /dpcmcserver /dpcmcserver/plugins
+RUN mkdir /dpcmcserver-build
 
 # Build server
 WORKDIR /dpcmcserver-build
@@ -16,11 +16,8 @@ RUN wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastS
 RUN git config --global --unset core.autocrlf || :
 RUN java -jar BuildTools.jar --rev 1.20.4
 
-# Copy server JAR
-RUN cp ./spigot-1.20.4.jar /dpcmcserver/spigot-1.20.4.jar
-
 # Download & install community plugins -----------------------------
-WORKDIR /dpcmcserver/plugins
+WORKDIR /jars
 RUN wget https://github.com/Dans-Plugins/Activity-Tracker/releases/download/1.2.0/ActivityTracker-1.2.0.jar
 RUN wget https://github.com/Dans-Plugins/AlternateAccountFinder/releases/download/2.0.0/AlternateAccountFinder-2.0.0-all.jar
 # TODO: conquest recipes?
@@ -47,11 +44,10 @@ RUN wget https://github.com/Dans-Plugins/SimpleSkills/releases/download/2.1.0/Si
 RUN wget https://github.com/Dans-Plugins/Wild-Pets/releases/download/1.5.1/WildPets-1.5.1.jar
 # --------------------------------------------------------
 
-# Accept EULA
-WORKDIR /dpcmcserver
-RUN echo "eula=true" > ./eula.txt
+# Copy post-create.sh
+COPY ./post-create.sh /post-create.sh
 
 # Run server
+WORKDIR /dpcmcserver
 EXPOSE 25565
-EXPOSE 8123
-ENTRYPOINT java -jar ./spigot-1.20.4.jar
+ENTRYPOINT /post-create.sh
