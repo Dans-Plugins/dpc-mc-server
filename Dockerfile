@@ -1,5 +1,7 @@
 FROM ubuntu
 
+USER root
+
 # Install dependencies
 RUN apt-get update
 RUN apt-get install -y git \
@@ -46,6 +48,7 @@ RUN wget https://github.com/Dans-Plugins/Wild-Pets/releases/download/1.5.1/WildP
 
 # Copy post-create.sh
 COPY ./post-create.sh /post-create.sh
+RUN chmod +x /post-create.sh
 
 # Run server
 WORKDIR /dpcmcserver

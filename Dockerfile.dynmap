@@ -1,5 +1,7 @@
 FROM ubuntu
 
+USER root
+
 # Install dependencies
 RUN apt-get update
 RUN apt-get install -y git \
@@ -54,6 +56,7 @@ RUN cp /dynmap-build/dynmap/target/Dynmap-*.jar /jars
 
 # Copy post-create.sh
 COPY ./post-create.sh /post-create.sh
+RUN chmod +x /post-create.sh
 
 # Run server
 WORKDIR /dpcmcserver
