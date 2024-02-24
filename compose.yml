@@ -7,7 +7,12 @@ services:
       - "25565:25565"
     restart: unless-stopped
     volumes:
-      - dpcmcserver:/dpcmcserver
+      - type: volume
+        source: dpcmcserver
+        target: /dpcmcserver
+      - type: bind
+        source: ./deposit-box
+        target: /deposit-box
 
 volumes:
   dpcmcserver:
