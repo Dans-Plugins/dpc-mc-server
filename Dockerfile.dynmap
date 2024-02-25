@@ -51,6 +51,11 @@ RUN wget https://github.com/Dans-Plugins/SimpleSkills/releases/download/2.1.0/Si
 RUN wget https://github.com/Dans-Plugins/Wild-Pets/releases/download/1.5.1/WildPets-1.5.1.jar
 # --------------------------------------------------------
 
+# Download and install other plugins -----------------------------
+RUN wget https://github.com/ViaVersion/ViaVersion/releases/download/4.9.2/ViaVersion-4.9.2.jar
+RUN wget https://github.com/ViaVersion/ViaBackwards/releases/download/4.9.1/ViaBackwards-4.9.1.jar
+# --------------------------------------------------------
+
 # Move Dynmap JAR
 RUN cp /dynmap-build/dynmap/target/Dynmap-*.jar /jars
 
