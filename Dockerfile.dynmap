@@ -48,7 +48,7 @@ RUN wget https://github.com/Dans-Plugins/Nether-Access-Controller/releases/downl
 RUN wget https://github.com/Dans-Plugins/NoMoreCreepers/releases/download/1.1.0/NoMoreCreepers-1.1.0.jar
 RUN wget https://github.com/Dans-Plugins/PlayerLore/releases/download/1.1/PlayerLore-1.1.jar
 RUN wget https://github.com/Dans-Plugins/SimpleSkills/releases/download/2.1.0/SimpleSkills-2.1.0.jar
-RUN wget https://github.com/Dans-Plugins/Wild-Pets/releases/download/1.5.1/WildPets-1.5.1.jar
+RUN wget https://github.com/Dans-Plugins/Wild-Pets/releases/download/v1.6.0/WildPets-1.6.0.jar
 # --------------------------------------------------------
 
 # Download and install other plugins -----------------------------
