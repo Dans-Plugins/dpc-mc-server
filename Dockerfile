@@ -55,6 +55,9 @@ RUN wget https://github.com/ViaVersion/ViaBackwards/releases/download/4.9.1/ViaB
 COPY ./post-create.sh /post-create.sh
 RUN chmod +x /post-create.sh
 
+# Copy config directory
+COPY ./config /config
+
 # Run server
 WORKDIR /dpcmcserver
 EXPOSE 25565

@@ -10,6 +10,9 @@ if [ -z "$(ls -A /dpcmcserver)" ]; then
     # Copy JARs
     cp /jars/*.jar /dpcmcserver/plugins
 
+    # Copy config files
+    cp /config/ops.json /dpcmcserver
+
     # Accept EULA
     cd /dpcmcserver && echo "eula=true" > eula.txt
 else
