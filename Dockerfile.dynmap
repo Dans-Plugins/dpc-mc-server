@@ -63,6 +63,9 @@ RUN cp /dynmap-build/dynmap/target/Dynmap-*.jar /jars
 COPY ./post-create.sh /post-create.sh
 RUN chmod +x /post-create.sh
 
+# Copy config directory
+COPY ./config /config
+
 # Run server
 WORKDIR /dpcmcserver
 EXPOSE 25565

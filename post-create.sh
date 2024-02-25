@@ -19,4 +19,7 @@ else
     echo "Server is already set up."
 fi
 
+echo "Copying file overrides..."
+cp /deposit-box/plugin-overrides/*.jar /dpcmcserver/plugins
+
 java -jar /dpcmcserver/spigot-1.20.4.jar
