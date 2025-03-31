@@ -104,6 +104,8 @@ manage_plugin_dependencies "NoMoreCreepers" "NO_MORE_CREEPERS_ENABLED"
 manage_plugin_dependencies "PlayerLore" "PLAYER_LORE_ENABLED"
 manage_plugin_dependencies "SimpleSkills" "SIMPLE_SKILLS_ENABLED"
 manage_plugin_dependencies "WildPets" "WILD_PETS_ENABLED"
+manage_plugin_dependencies "ViaBackwards" "VIA_BACKWARDS_ENABLED"
+manage_plugin_dependencies "ViaVersion" "VIA_VERSION_ENABLED"
 
 # manage other plugins
 if [ "$BLUEMAP_ENABLED" = "true" ]; then
