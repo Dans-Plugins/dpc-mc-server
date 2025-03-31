@@ -59,6 +59,9 @@ manage_plugin_dependencies() {
     elif [ "${!enabled_var}" = "false" ]; then
         log "${plugin_name} disabled. Removing plugin JAR if it exists..."
         rm -f "$SERVER_DIR"/plugins/${plugin_name}-*.jar
+    else
+        log "Invalid value for ${enabled_var}. Must be 'true' or 'false'."
+        exit 1
     fi
 }
 
