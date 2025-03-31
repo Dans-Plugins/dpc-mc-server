@@ -1,64 +1,20 @@
 FROM ubuntu
 
-USER root
-
 # Install dependencies
-RUN apt-get update
-RUN apt-get install -y git \
-    openjdk-17-jdk \
-    openjdk-17-jre \
-    wget
-
-# Create directories
-RUN mkdir /dpcmcserver-build
+RUN apt update
+RUN DEBIAN_FRONTEND=noninteractive apt install -y wget git openjdk-21-jdk openjdk-21-jre
 
 # Build server
 WORKDIR /dpcmcserver-build
 RUN wget -O BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
 RUN git config --global --unset core.autocrlf || :
-RUN java -jar BuildTools.jar --rev 1.20.4
+RUN java -jar BuildTools.jar --rev 1.21.4
 
-# Download & install community plugins -----------------------------
-WORKDIR /jars
-RUN wget https://github.com/Dans-Plugins/Activity-Tracker/releases/download/1.2.0/ActivityTracker-1.2.0.jar
-RUN wget https://github.com/Dans-Plugins/AlternateAccountFinder/releases/download/2.0.0/AlternateAccountFinder-2.0.0-all.jar
-# TODO: conquest recipes?
-RUN wget https://github.com/Dans-Plugins/Currencies/releases/download/v2.0.0/currencies-2.0.0-all.jar
-RUN wget https://github.com/Dans-Plugins/Dans-Essentials/releases/download/2.3.0/Dans-Essentials-2.3.0.jar
-RUN wget https://github.com/Dans-Plugins/Dans-Plugin-Manager/releases/download/0.3/DansPluginManager-0.3.jar
-RUN wget https://github.com/Dans-Plugins/Dans-Set-Home/releases/download/1.2.0/Dans-Set-Home-1.2.0.jar
-RUN wget https://github.com/Dans-Plugins/Dans-Spawn-System/releases/download/1.2.0/Dans-Spawn-System-1.2.0.jar
-# TODO: democracy?
-RUN wget https://github.com/Dans-Plugins/Easy-Links/releases/download/v0.2.1/Easy-Links-v0.2.1.jar
-RUN wget https://github.com/Dans-Plugins/Fiefs/releases/download/v0.10/Fiefs-0.10.jar
-RUN wget https://github.com/Dans-Plugins/FoodSpoilage/releases/download/3.0.1/FoodSpoilage-3.0.1.jar
-# TODO: KDRTracker?
-RUN wget https://github.com/Dans-Plugins/Mailboxes/releases/download/v1.1/Mailboxes-v1.1.jar
-RUN wget https://github.com/Dans-Plugins/Medieval-Cookery/releases/download/0.1-SNAPSHOT-7-5-2022/Medieval-Cookery-0.1-SNAPSHOT.jar
-RUN wget https://github.com/Dans-Plugins/Medieval-Economy/releases/download/1.2.0/Medieval-Economy-1.2.0.jar
-RUN wget https://github.com/Dans-Plugins/Medieval-Factions/releases/download/v5.3.0/medieval-factions-5.3.0-all.jar
-RUN wget https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/releases/download/v1.12.0/Medieval-Roleplay-Engine-1.12.0.jar
-RUN wget https://github.com/Dans-Plugins/More-Recipes/releases/download/1.7.0/More-Recipes-1.7.0.jar
-RUN wget https://github.com/Dans-Plugins/Nether-Access-Controller/releases/download/1.1.0/NetherAccessController-1.1.0.jar
-RUN wget https://github.com/Dans-Plugins/NoMoreCreepers/releases/download/1.1.0/NoMoreCreepers-1.1.0.jar
-RUN wget https://github.com/Dans-Plugins/PlayerLore/releases/download/1.1/PlayerLore-1.1.jar
-RUN wget https://github.com/Dans-Plugins/SimpleSkills/releases/download/2.1.0/SimpleSkills-2.1.0.jar
-RUN wget https://github.com/Dans-Plugins/Wild-Pets/releases/download/v1.6.0/WildPets-1.6.0.jar
-# --------------------------------------------------------
-
-# Download and install other plugins -----------------------------
-RUN wget https://github.com/ViaVersion/ViaVersion/releases/download/4.9.2/ViaVersion-4.9.2.jar
-RUN wget https://github.com/ViaVersion/ViaBackwards/releases/download/4.9.1/ViaBackwards-4.9.1.jar
-# --------------------------------------------------------
-
-# Copy post-create.sh
-COPY ./post-create.sh /post-create.sh
-RUN chmod +x /post-create.sh
-
-# Copy config directory
-COPY ./config /config
+# Copy resources and make post-create.sh executable
+COPY ./resources /resources
+RUN chmod +x /resources/post-create.sh
 
 # Run server
 WORKDIR /dpcmcserver
 EXPOSE 25565
-ENTRYPOINT /post-create.sh
+ENTRYPOINT /resources/post-create.sh

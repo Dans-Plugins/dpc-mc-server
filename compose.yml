@@ -1,11 +1,12 @@
 services:
-  dpc-mc-server:
+  testmcserver:
     build: .
     image: dpc-mc-server
     container_name: dpc-mc-server
     ports:
       - "25565:25565"
-    restart: unless-stopped
+      - "8123:8123"
+      - "8100:8100"
     volumes:
       - type: volume
         source: dpcmcserver
@@ -13,6 +14,16 @@ services:
       - type: bind
         source: ./deposit-box
         target: /deposit-box
+    environment:
+      - MINECRAFT_VERSION=${MINECRAFT_VERSION}
+      - OPERATOR_UUID=${OPERATOR_UUID}
+      - OPERATOR_NAME=${OPERATOR_NAME}
+      - OPERATOR_LEVEL=${OPERATOR_LEVEL}
+      - OVERWRITE_EXISTING_SERVER=${OVERWRITE_EXISTING_SERVER}
+      - CURRENCIES_ENABLED=${CURRENCIES_ENABLED}
+      - DYNMAP_ENABLED=${DYNMAP_ENABLED}
+      - BLUEMAP_ENABLED=${BLUEMAP_ENABLED}
+      - PLACEHOLDER_API_ENABLED=${PLACEHOLDER_API_ENABLED}
 
 volumes:
   dpcmcserver:
