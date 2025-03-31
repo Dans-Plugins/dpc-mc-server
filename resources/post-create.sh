@@ -101,7 +101,7 @@ manage_plugin_dependencies "Medieval-Roleplay-Engine" "MEDIEVAL_ROLEPLAY_ENGINE_
 manage_plugin_dependencies "More-Recipes" "MORE_RECIPES_ENABLED"
 manage_plugin_dependencies "NetherAccessController" "NETHER_ACCESS_CONTROLLER_ENABLED"
 manage_plugin_dependencies "NoMoreCreepers" "NO_MORE_CREEPERS_ENABLED"
-manage_plugin_dependencies "PlayerLores" "PLAYER_LORE_ENABLED"
+manage_plugin_dependencies "PlayerLore" "PLAYER_LORE_ENABLED"
 manage_plugin_dependencies "SimpleSkills" "SIMPLE_SKILLS_ENABLED"
 manage_plugin_dependencies "WildPets" "WILD_PETS_ENABLED"
 
