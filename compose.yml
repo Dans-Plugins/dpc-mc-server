@@ -1,5 +1,5 @@
 services:
-  testmcserver:
+  dpcmcserver:
     build: .
     image: dpc-mc-server
     container_name: dpc-mc-server
