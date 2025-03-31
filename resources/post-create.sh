@@ -24,7 +24,7 @@ setup_server() {
 # Function: Setup ops.json file
 setup_ops_file() {
     log "Creating ops.json file..."
-    cat <<EOF > /testmcserver/ops.json
+    cat <<EOF > "$SERVER_DIR"/ops.json
     [
       {
         "uuid": "${OPERATOR_UUID}",
