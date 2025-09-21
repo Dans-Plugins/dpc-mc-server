@@ -43,6 +43,29 @@ services:
       - PLACEHOLDER_API_ENABLED=${PLACEHOLDER_API_ENABLED}
       - VIA_BACKWARDS_ENABLED=${VIA_BACKWARDS_ENABLED}
       - VIA_VERSION_ENABLED=${VIA_VERSION_ENABLED}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: dpc-mc-server-postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
 
 volumes:
   dpcmcserver:
+  postgres_data:

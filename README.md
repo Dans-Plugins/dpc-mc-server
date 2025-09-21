@@ -24,6 +24,17 @@ Currently being hosted at [dansplugins.com](https://dansplugins.com)
 3. When you are done, run `exit` to exit the container.
 4. Run `docker compose restart` to restart the server with your changes.
 
+## Database
+The server includes a PostgreSQL database for plugins that require database storage, such as Medieval Factions. The database configuration can be modified via environment variables:
+
+- `POSTGRES_HOST`: Database hostname (default: `postgres`)
+- `POSTGRES_PORT`: Database port (default: `5432`)
+- `POSTGRES_DB`: Database name (default: `medieval_factions`)
+- `POSTGRES_USER`: Database username (default: `mcserver`)
+- `POSTGRES_PASSWORD`: Database password (default: `medievalfactions_password`)
+
+The database is automatically started with the server and data is persisted in a Docker volume named `postgres_data`.
+
 ## License
 
 This project is licensed under the [GNU General Public License v3.0](LICENSE) (GPL-3.0).
