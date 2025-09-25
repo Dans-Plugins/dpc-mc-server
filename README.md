@@ -8,15 +8,16 @@ Currently being hosted at [dansplugins.com](https://dansplugins.com)
 1. Install [Docker Compose](https://docs.docker.com/compose/install/)
 1. Install [Git](https://git-scm.com/downloads)
 1. Clone this repository
+1. Copy `sample.env` to `.env` and configure your environment variables (including PostgreSQL database settings for the Vantage server panel)
 1. [Start the server](#starting)
 
 ## Starting
 1. Run `docker compose up -d` in the repository directory
-1. Type `docker ps` to confirm that the server is running
+1. Type `docker ps` to confirm that both the server and database are running
 
 ## Stopping
 1. Run `docker compose down` in the repository directory
-1. Type `docker ps` to confirm that the server is no longer running
+1. Type `docker ps` to confirm that the server and database containers are no longer running
 
 ## Modifying server files
 1. While the server is running, run `docker exec -it dpc-mc-server /bin/bash`
