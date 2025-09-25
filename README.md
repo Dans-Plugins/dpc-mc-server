@@ -7,17 +7,18 @@ Currently being hosted at [dansplugins.com](https://dansplugins.com)
 1. Install [Docker](https://docs.docker.com/get-docker/)
 1. Install [Docker Compose](https://docs.docker.com/compose/install/)
 1. Install [Git](https://git-scm.com/downloads)
-1. Clone this repository
-1. Copy `sample.env` to `.env` and configure your environment variables (including PostgreSQL database settings for the Vantage server panel)
+1. Clone this repository with submodules: `git clone --recursive https://github.com/Dans-Plugins/dpc-mc-server.git`
+1. Copy `sample.env` to `.env` and configure your environment variables (including PostgreSQL database settings and NextAuth secret for the Vantage server panel)
 1. [Start the server](#starting)
 
 ## Starting
 1. Run `docker compose up -d` in the repository directory
-1. Type `docker ps` to confirm that both the server and database are running
+1. Type `docker ps` to confirm that the server, database, and Vantage panel services are running
+1. Access the Vantage server panel at [http://localhost:3000](http://localhost:3000)
 
 ## Stopping
 1. Run `docker compose down` in the repository directory
-1. Type `docker ps` to confirm that the server and database containers are no longer running
+1. Type `docker ps` to confirm that all containers are no longer running
 
 ## Modifying server files
 1. While the server is running, run `docker exec -it dpc-mc-server /bin/bash`

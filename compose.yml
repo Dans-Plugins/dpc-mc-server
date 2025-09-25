@@ -61,6 +61,40 @@ services:
         source: postgres_data
         target: /var/lib/postgresql/data
 
+  vantage-backend:
+    build:
+      context: ./vantage/backend
+      dockerfile: Dockerfile
+    container_name: dpc-vantage-backend
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - postgres
+
+  vantage-frontend:
+    build:
+      context: ./vantage/frontend
+      dockerfile: Dockerfile
+    container_name: dpc-vantage-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_VANTAGE_API_URL=http://localhost:9000/api/v2
+      - VANTAGE_API_URL=http://vantage-backend:9000/api/v2
+      - NEXT_PUBLIC_VANTAGE_WEBSOCKET_URL=ws://localhost:9000/ws
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      - vantage-backend
+
 volumes:
   dpcmcserver:
   postgres_data:
