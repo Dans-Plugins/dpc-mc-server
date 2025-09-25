@@ -31,9 +31,9 @@ jobs:
         if [ "${{ matrix.service }}" = "dpcmcserver" ]; then
           docker build -t dpc-mc-server .
         elif [ "${{ matrix.service }}" = "vantage-backend" ]; then
-          docker build -t vantage-backend ./vantage/backend
+          docker build -t vantage-backend -f dockerfiles/vantage-backend/Dockerfile .
         elif [ "${{ matrix.service }}" = "vantage-frontend" ]; then
-          docker build -t vantage-frontend ./vantage/frontend
+          docker build -t vantage-frontend -f dockerfiles/vantage-frontend/Dockerfile .
         fi
 
   unit-tests:
