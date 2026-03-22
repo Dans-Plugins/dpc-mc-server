@@ -2,7 +2,7 @@
 
 ## Description
 
-DPC MC Server is an infrastructure-as-code Minecraft server for the Dan's Plugins Community. It uses Docker to provide a reproducible, configurable Spigot server pre-loaded with a curated set of DPC plugins. The server is currently hosted at [dansplugins.com](https://dansplugins.com).
+DPC MC Server is an infrastructure-as-code Minecraft server for the Dan's Plugins Community. It uses Docker to provide a reproducible, configurable Spigot server pre-loaded with a curated set of DPC plugins.
 
 ## Installation
 
