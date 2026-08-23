@@ -6,7 +6,9 @@ All configuration is done through environment variables. Copy `sample.env` to `.
 
 **Type:** string  
 **Default:** `1.21.4`  
-**Description:** The version of Minecraft (and Spigot) that the server runs. This value is used by BuildTools inside the Docker image and must match a valid Spigot release.
+**Description:** Names the Spigot JAR that the container copies into the server directory and launches at startup (`spigot-<MINECRAFT_VERSION>.jar`). The value is read at runtime by `resources/post-create.sh`; it is **not** read by BuildTools. The Spigot revision that is compiled into the image is set separately, by the hardcoded `--rev` argument in the `Dockerfile`.
+
+**Changing the Minecraft version therefore requires editing two places:** this variable *and* the `--rev` argument in the `Dockerfile`. If the two disagree, the image still builds successfully and the container then exits at startup, because the JAR it has been told to launch was never produced.
 
 **Example:**
 
@@ -56,6 +58,8 @@ OPERATOR_LEVEL=4
 **Default:** `false`  
 **Description:** When `true`, all existing server data is deleted and the server is re-initialised on the next container start. **Use with caution** – this is destructive. Reset to `false` immediately after the reset to avoid accidental data loss.
 
+Note that the value is captured in the container's environment when the container is created. Setting it back to `false` and then running `docker compose restart` does **not** clear it: the old value is still in the running container's environment, and the server data is wiped again on every restart. The container must be recreated with `./up.sh` for the new value to take effect.
+
 **Example:**
 
 ```env
@@ -66,7 +70,7 @@ OVERWRITE_EXISTING_SERVER=false
 
 ## DPC Plugin Toggles
 
-Each of the following variables accepts `true` (install and enable the plugin) or `false` (do not install it). Set them in `.env` before starting the server.
+Each of the following variables accepts `true` (install and enable the plugin) or `false` (do not install it). Set them in `.env` before starting the server. Because the toggles are read from the container's environment by the entrypoint script, an edit made after the container already exists only takes effect once the container has been recreated with `./up.sh` – see [Enabling or Disabling a Plugin](USER_GUIDE.md#enabling-or-disabling-a-plugin).
 
 | Variable | Default | Plugin |
 |----------|---------|--------|

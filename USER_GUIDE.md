@@ -39,6 +39,8 @@
 docker compose restart
 ```
 
+This restarts the existing container without recreating it, which is what you want after editing files inside the container. It does **not** pick up changes made to `.env`, because environment variables are captured when the container is created. To apply an `.env` change, recreate the container with `./up.sh` instead.
+
 ### Viewing Server Logs
 
 ```
@@ -60,15 +62,30 @@ docker exec -it dpc-mc-server /bin/bash
 
 ### Adding Plugins to the Deposit Box
 
-Place plugin JARs or override configuration files in the `deposit-box/` directory before starting the server. The container mounts this directory so that its contents are available at `/deposit-box` inside the container.
+Place plugin JARs or override configuration files in the `deposit-box/` directory before starting the server. The container bind-mounts this directory so that its contents are available at `/deposit-box` inside the container.
+
+Nothing is installed automatically from the deposit box: the directory is a staging area only. To install a JAR that has been placed there, open a shell in the container and copy it across yourself, then restart:
+
+```
+docker exec -it dpc-mc-server /bin/bash
+cp /deposit-box/YourPlugin.jar /dpcmcserver/plugins/
+exit
+docker compose restart
+```
+
+Be aware that the entrypoint script re-applies every bundled plugin toggle on each start. A JAR whose filename begins with the same prefix as a bundled plugin (for example `WildPets-`) is therefore affected by that plugin's toggle: with the toggle set to `true` the bundled copy is placed alongside it and both versions are loaded, and with the toggle set to `false` the deposited copy is deleted along with the bundled one.
 
 ### Enabling or Disabling a Plugin
 
-Edit `.env` and set the corresponding `<PLUGIN>_ENABLED` variable to `true` or `false`, then restart the server with `docker compose restart`. See [CONFIG.md](CONFIG.md) for the full list of plugin toggles.
+Edit `.env` and set the corresponding `<PLUGIN>_ENABLED` variable to `true` or `false`, then recreate the container with `./up.sh`. See [CONFIG.md](CONFIG.md) for the full list of plugin toggles.
+
+`docker compose restart` is not sufficient here. The toggles reach the entrypoint script through the container's environment, which is fixed when the container is created, so a restarted container still sees the old values.
 
 ### Resetting the Server
 
-Set `OVERWRITE_EXISTING_SERVER=true` in `.env` and restart. **This deletes all existing server data.** Reset the variable to `false` after the restart to prevent accidental data loss.
+Set `OVERWRITE_EXISTING_SERVER=true` in `.env` and run `./up.sh`. **This deletes all existing server data.** Set the variable back to `false` afterwards and run `./up.sh` again to prevent accidental data loss.
+
+Both steps require `./up.sh` rather than `docker compose restart`, for the reason given under [Restarting the Server](#restarting-the-server). Clearing the variable in `.env` and then merely restarting leaves `OVERWRITE_EXISTING_SERVER=true` in the running container's environment, which wipes the server data again on every subsequent restart.
 
 ## Permissions
 
