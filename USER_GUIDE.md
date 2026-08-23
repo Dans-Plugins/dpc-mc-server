@@ -73,7 +73,7 @@ exit
 docker compose restart
 ```
 
-Be aware that the entrypoint script re-applies every bundled plugin toggle on each start. A JAR whose filename begins with the same prefix as a bundled plugin (for example `WildPets-`) is therefore affected by that plugin's toggle: with the toggle set to `true` the bundled copy is placed alongside it and both versions are loaded, and with the toggle set to `false` the deposited copy is deleted along with the bundled one.
+Be aware that the entrypoint script re-applies every bundled plugin toggle on each start. A JAR whose filename begins with the same prefix as a bundled plugin (for example `WildPets-`) is therefore affected by that plugin's toggle: with the toggle set to `true` the bundled copy is placed alongside it, leaving two JARs that provide the same plugin, which Spigot will not load cleanly; and with the toggle set to `false` the deposited copy is deleted along with the bundled one, because the removal matches on the same prefix. Deposit a newer version of a bundled plugin by replacing the bundled JAR in `resources/jars/` and rebuilding, not through the deposit box.
 
 ### Enabling or Disabling a Plugin
 

@@ -23,7 +23,7 @@ The management commands below are used to operate the server from the host machi
 
 ### Apply a change made to `.env`
 
-**Description:** Recreate the container so that edited environment variables (plugin toggles, `OPERATOR_*`, `OVERWRITE_EXISTING_SERVER`, `MINECRAFT_VERSION`) take effect.  
+**Description:** Recreate the container so that edited environment variables (plugin toggles, `OPERATOR_*`, `OVERWRITE_EXISTING_SERVER`, `MINECRAFT_VERSION`) take effect. This is the same command used to start the server; Compose recreates a container whose environment has changed. `docker compose up -d` is equivalent when the image does not also need rebuilding.  
 **Usage:** `./up.sh`
 
 ### View server logs
