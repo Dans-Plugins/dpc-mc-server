@@ -18,8 +18,13 @@ The management commands below are used to operate the server from the host machi
 
 ### Restart the server
 
-**Description:** Restart the running container without rebuilding the image.  
+**Description:** Restart the running container without recreating it. Changes made to `.env` are **not** applied by this command, because the container's environment is fixed when the container is created; use `./up.sh` to apply those.  
 **Usage:** `docker compose restart`
+
+### Apply a change made to `.env`
+
+**Description:** Recreate the container so that edited environment variables (plugin toggles, `OPERATOR_*`, `OVERWRITE_EXISTING_SERVER`, `MINECRAFT_VERSION`) take effect. This is the same command used to start the server; Compose recreates a container whose environment has changed. `docker compose up -d` is equivalent when the image does not also need rebuilding.  
+**Usage:** `./up.sh`
 
 ### View server logs
 
@@ -38,7 +43,9 @@ The management commands below are used to operate the server from the host machi
 
 ## Plugin Commands
 
-Each installed plugin provides its own set of in-game commands. Links to their individual command references are listed below:
+Each installed plugin provides its own set of in-game commands. Links to their individual command references are listed below. Whether a given plugin is installed depends on its toggle in `.env`; see [CONFIG.md](CONFIG.md).
+
+### DPC Plugins
 
 - [ActivityTracker](https://github.com/Dans-Plugins/ActivityTracker)
 - [AlternateAccountFinder](https://github.com/Dans-Plugins/AlternateAccountFinder)
@@ -58,3 +65,11 @@ Each installed plugin provides its own set of in-game commands. Links to their i
 - [PlayerLore](https://github.com/Dans-Plugins/PlayerLore)
 - [SimpleSkills](https://github.com/Dans-Plugins/SimpleSkills)
 - [WildPets](https://github.com/Dans-Plugins/WildPets)
+
+### Third-Party Plugins
+
+- [BlueMap](https://bluemap.bluecolored.de/)
+- [Dynmap](https://www.spigotmc.org/resources/dynmap.274/)
+- [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)
+- [ViaBackwards](https://www.spigotmc.org/resources/viabackwards.27448/)
+- [ViaVersion](https://www.spigotmc.org/resources/viaversion.19254/)

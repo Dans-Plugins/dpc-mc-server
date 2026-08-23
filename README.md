@@ -38,7 +38,9 @@ The server ships with the following DPC plugins (each can be toggled on or off v
 - [SimpleSkills](https://github.com/Dans-Plugins/SimpleSkills)
 - [WildPets](https://github.com/Dans-Plugins/WildPets)
 
-Third-party plugins also included: Dynmap, BlueMap, PlaceholderAPI, ViaVersion, ViaBackwards.
+Third-party plugins are bundled alongside them and are toggled the same way: [BlueMap](https://bluemap.bluecolored.de/), [Dynmap](https://www.spigotmc.org/resources/dynmap.274/), [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/), [ViaBackwards](https://www.spigotmc.org/resources/viabackwards.27448/), and [ViaVersion](https://www.spigotmc.org/resources/viaversion.19254/).
+
+Not every bundled plugin is enabled by default. See the [Configuration Guide](CONFIG.md) for each toggle's default value, and note that a toggle changed after the container already exists only takes effect once the container has been recreated with `./up.sh`.
 
 ## Usage
 
