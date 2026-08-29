@@ -6,8 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `tests/test-post-create.sh`, which exercises the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree without building an image or starting a server. The script is documented in the Testing sections of `README.md` and `CONTRIBUTING.md`.
+
 ### Fixed
 
+- `BLUEMAP_ENABLED=false` now removes an already-installed BlueMap JAR. The call to `manage_plugin_dependencies` was nested inside an `if [ "$BLUEMAP_ENABLED" = "true" ]` block, so the function's "disable" and invalid-value branches were unreachable for BlueMap alone and a server that had once been started with BlueMap enabled kept loading it. Only `update_bluemap_config` remains behind the conditional.
+- An unrecognised plugin-toggle value now exits with status `1` instead of `0`. The bare `exit` returned the status of the preceding `echo`, so a typo such as `FIEFS_ENABLED=flase` stopped the container before the server started while reporting a clean shutdown to Docker.
 - Corrected the `MINECRAFT_VERSION` description in `CONFIG.md`, which stated that the value is used by BuildTools. BuildTools uses the hardcoded `--rev` argument in the `Dockerfile`; `MINECRAFT_VERSION` only names the Spigot JAR that the entrypoint copies and launches at runtime. The requirement to change both together is now documented.
 - Corrected the instructions for enabling or disabling a plugin and for resetting the server in `USER_GUIDE.md`, which told users to apply `.env` changes with `docker compose restart`. That command does not recreate the container, so the edited values never reach it; `./up.sh` is required.
 

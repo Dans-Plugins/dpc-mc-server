@@ -70,7 +70,9 @@ OVERWRITE_EXISTING_SERVER=false
 
 ## DPC Plugin Toggles
 
-Each of the following variables accepts `true` (install and enable the plugin) or `false` (do not install it). Set them in `.env` before starting the server. Because the toggles are read from the container's environment by the entrypoint script, an edit made after the container already exists only takes effect once the container has been recreated with `./up.sh` – see [Enabling or Disabling a Plugin](USER_GUIDE.md#enabling-or-disabling-a-plugin).
+Each of the following variables accepts `true` (install and enable the plugin) or `false` (remove the plugin's JAR if it is already installed, and do not install it). Set them in `.env` before starting the server. Because the toggles are read from the container's environment by the entrypoint script, an edit made after the container already exists only takes effect once the container has been recreated with `./up.sh` – see [Enabling or Disabling a Plugin](USER_GUIDE.md#enabling-or-disabling-a-plugin).
+
+Any other value – including an empty value or a typo such as `ture` – is a fatal error. The entrypoint logs `Invalid value for <VARIABLE>. Must be 'true' or 'false'.` and exits with status `1` before the server is started, so the container stops and `docker logs dpc-mc-server` shows the offending variable. The same rule applies to the third-party toggles below.
 
 | Variable | Default | Plugin |
 |----------|---------|--------|

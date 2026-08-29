@@ -67,13 +67,21 @@ Please fill out a bug report [here](https://github.com/Dans-Plugins/dpc-mc-serve
 
 ## Testing
 
+### Validating the Entrypoint Script
+
+```
+./tests/test-post-create.sh
+```
+
+The script exercises the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree, without building an image or starting a server. It prints `POST-CREATE TESTS: PASS` and exits `0` when every assertion holds.
+
 ### Validating the Docker Build
 
 ```
 docker build -t dpc-mc-server-test .
 ```
 
-A successful build produces a `Successfully built` message at the end of the output.
+A successful build produces a `Successfully built` message at the end of the output. Note that the build only proves the image compiles; `resources/post-create.sh` is the image's entrypoint and is never executed during a build.
 
 ## Development
 

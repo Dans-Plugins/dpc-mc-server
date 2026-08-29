@@ -79,6 +79,8 @@ Be aware that the entrypoint script re-applies every bundled plugin toggle on ea
 
 Edit `.env` and set the corresponding `<PLUGIN>_ENABLED` variable to `true` or `false`, then recreate the container with `./up.sh`. See [CONFIG.md](CONFIG.md) for the full list of plugin toggles.
 
+Only `true` and `false` are accepted. Any other value stops the container before the server starts; run `docker logs dpc-mc-server` to see which variable was rejected.
+
 `docker compose restart` is not sufficient here. The toggles reach the entrypoint script through the container's environment, which is fixed when the container is created, so a restarted container still sees the old values.
 
 ### Resetting the Server
