@@ -26,9 +26,20 @@ report_fail() {
 }
 
 # Function: Source the entrypoint's function definitions without running them
+#
+# The "# Main Process" marker is what separates the definitions from the code
+# that runs them, so its absence is treated as a hard error rather than allowed
+# to fall through: sourcing the whole entrypoint would run setup_server, which
+# deletes the contents of /dpcmcserver.
 load_entrypoint_functions() {
+    if ! grep -q '^# Main Process$' "$ENTRYPOINT"; then
+        report_fail "the '# Main Process' marker is missing from $ENTRYPOINT, so the function definitions cannot be isolated"
+        echo "POST-CREATE TESTS: FAIL (1 failing)"
+        exit 1
+    fi
+
     local definitions
-    definitions="$(mktemp)"
+    definitions="$(mktemp)" || exit 1
     sed '/^# Main Process$/,$d' "$ENTRYPOINT" > "$definitions"
     # shellcheck disable=SC1090
     . "$definitions"
@@ -37,7 +48,7 @@ load_entrypoint_functions() {
 
 # Function: Create a throwaway server directory and JAR resource directory
 setup_fixture() {
-    FIXTURE_DIR="$(mktemp -d)"
+    FIXTURE_DIR="$(mktemp -d)" || exit 1
     SERVER_DIR="$FIXTURE_DIR/server"
     RESOURCES_DIR="$FIXTURE_DIR/jars"
     mkdir -p "$SERVER_DIR/plugins" "$RESOURCES_DIR"
