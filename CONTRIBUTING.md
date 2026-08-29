@@ -49,11 +49,21 @@ Issues are grouped into [milestones](https://github.com/Dans-Plugins/dpc-mc-serv
 
 ## Testing
 
+Run the entrypoint tests, which check the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree:
+
+```
+./tests/test-post-create.sh
+```
+
+A passing run ends with `POST-CREATE TESTS: PASS` and exits `0`.
+
 Validate the Docker image builds successfully:
 
 ```
 docker build -t dpc-mc-server-test .
 ```
+
+The build compiles Spigot from source and does not run `resources/post-create.sh`, so a green build says nothing about the entrypoint's runtime behaviour. Changes to that script need the entrypoint tests above and a manual `./up.sh` run.
 
 For manual end-to-end testing, start a local server:
 

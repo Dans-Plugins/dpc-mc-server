@@ -61,7 +61,7 @@ manage_plugin_dependencies() {
         rm -f "$SERVER_DIR"/plugins/${plugin_name}-*.jar
     else
         log "Invalid value for ${enabled_var}. Must be 'true' or 'false'."
-        exit
+        exit 1
     fi
 }
 
@@ -107,8 +107,8 @@ manage_plugin_dependencies "ViaBackwards" "VIA_BACKWARDS_ENABLED"
 manage_plugin_dependencies "ViaVersion" "VIA_VERSION_ENABLED"
 
 # manage other plugins
+manage_plugin_dependencies "bluemap" "BLUEMAP_ENABLED"
 if [ "$BLUEMAP_ENABLED" = "true" ]; then
-    manage_plugin_dependencies "bluemap" "BLUEMAP_ENABLED"
     update_bluemap_config
 fi
 manage_plugin_dependencies "Dynmap" "DYNMAP_ENABLED"
