@@ -9,8 +9,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - `tests/test-post-create.sh`, which exercises the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree without building an image or starting a server. The script is documented in the Testing sections of `README.md` and `CONTRIBUTING.md`.
+- `tests/test-scripts.sh`, which checks that `up.sh` and `down.sh` are tracked as executable, declare a bash shebang, and call the Compose v2 `docker compose` plugin. The script is documented in the Testing sections of `README.md` and `CONTRIBUTING.md`.
 
 ### Fixed
+
+- `up.sh` and `down.sh` now call the Compose v2 `docker compose` plugin instead of the end-of-life `docker-compose` v1 binary, which current Docker installations do not ship, so the documented `./up.sh` and `./down.sh` no longer fail with `docker-compose: command not found`. Both scripts are now tracked as executable, declare `#!/bin/bash`, and end with a trailing newline; previously a fresh clone could not run `./up.sh` at all without `chmod +x` first.
 
 - `BLUEMAP_ENABLED=false` now removes an already-installed BlueMap JAR. The call to `manage_plugin_dependencies` was nested inside an `if [ "$BLUEMAP_ENABLED" = "true" ]` block, so the function's "disable" and invalid-value branches were unreachable for BlueMap alone and a server that had once been started with BlueMap enabled kept loading it. Only `update_bluemap_config` remains behind the conditional.
 - An unrecognised plugin-toggle value now exits with status `1` instead of `0`. The bare `exit` returned the status of the preceding `echo`, so a typo such as `FIEFS_ENABLED=flase` stopped the container before the server started while reporting a clean shutdown to Docker.

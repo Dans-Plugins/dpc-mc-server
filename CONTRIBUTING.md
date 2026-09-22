@@ -57,6 +57,14 @@ Run the entrypoint tests, which check the plugin-toggle handling in `resources/p
 
 A passing run ends with `POST-CREATE TESTS: PASS` and exits `0`.
 
+Run the convenience-script tests, which check that `up.sh` and `down.sh` are executable, declare a bash shebang, and call the Compose v2 `docker compose` plugin:
+
+```
+./tests/test-scripts.sh
+```
+
+A passing run ends with `SCRIPT TESTS: PASS` and exits `0`.
+
 Validate the Docker image builds successfully:
 
 ```

@@ -75,6 +75,14 @@ Please fill out a bug report [here](https://github.com/Dans-Plugins/dpc-mc-serve
 
 The script exercises the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree, without building an image or starting a server. It prints `POST-CREATE TESTS: PASS` and exits `0` when every assertion holds.
 
+### Validating the Convenience Scripts
+
+```
+./tests/test-scripts.sh
+```
+
+The script checks that `up.sh` and `down.sh` are tracked as executable, start with a bash shebang, call the Compose v2 `docker compose` plugin rather than the end-of-life `docker-compose` binary, and pass `bash -n`. It prints `SCRIPT TESTS: PASS` and exits `0` when every assertion holds. Nothing is run under Docker.
+
 ### Validating the Docker Build
 
 ```
