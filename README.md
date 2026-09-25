@@ -83,6 +83,14 @@ The script exercises the plugin-toggle handling in `resources/post-create.sh` ag
 
 The script checks that `up.sh` and `down.sh` are tracked as executable, start with a bash shebang, call the Compose v2 `docker compose` plugin rather than the end-of-life `docker-compose` binary, and pass `bash -n`. It prints `SCRIPT TESTS: PASS` and exits `0` when every assertion holds. Nothing is run under Docker.
 
+### Validating the Configuration Wiring
+
+```
+./tests/test-wiring.sh
+```
+
+The script checks that the configuration files agree with each other: every variable interpolated in `compose.yml` has a default in `sample.env` and every variable in `sample.env` is forwarded by `compose.yml`; every plugin prefix passed to `manage_plugin_dependencies` matches exactly one JAR in `resources/jars/` (case-sensitively); `MINECRAFT_VERSION` equals the `--rev` argument in the `Dockerfile`; and every variable in `sample.env` is documented in `CONFIG.md` with the default that `sample.env` sets. It prints `WIRING TESTS: PASS` and exits `0` when every assertion holds. Nothing is run under Docker.
+
 ### Validating the Docker Build
 
 ```
