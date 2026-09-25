@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - `tests/test-post-create.sh`, which exercises the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree without building an image or starting a server. The script is documented in the Testing sections of `README.md` and `CONTRIBUTING.md`.
 - `tests/test-scripts.sh`, which checks that `up.sh` and `down.sh` are tracked as executable, declare a bash shebang, and call the Compose v2 `docker compose` plugin. The script is documented in the Testing sections of `README.md` and `CONTRIBUTING.md`.
+- `tests/test-wiring.sh`, which checks that the configuration files agree: `compose.yml` and `sample.env` define and forward the same variables, every `manage_plugin_dependencies` prefix matches exactly one JAR in `resources/jars/` case-sensitively, `MINECRAFT_VERSION` equals the `Dockerfile`'s `--rev` argument, and `CONFIG.md` documents every `sample.env` variable with its actual default. The script is documented in the Testing sections of `README.md` and `CONTRIBUTING.md`. Like the other test scripts, it is not yet run by CI.
 
 ### Fixed
 

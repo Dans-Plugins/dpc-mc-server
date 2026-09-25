@@ -65,6 +65,14 @@ Run the convenience-script tests, which check that `up.sh` and `down.sh` are exe
 
 A passing run ends with `SCRIPT TESTS: PASS` and exits `0`.
 
+Run the wiring tests, which check that `sample.env`, `compose.yml`, `resources/post-create.sh`, `resources/jars/`, the `Dockerfile`, and `CONFIG.md` agree with each other. Run them after adding, renaming, or removing a plugin toggle or configuration variable, after replacing a JAR, and after changing the Minecraft version:
+
+```
+./tests/test-wiring.sh
+```
+
+A passing run ends with `WIRING TESTS: PASS` and exits `0`.
+
 Validate the Docker image builds successfully:
 
 ```
