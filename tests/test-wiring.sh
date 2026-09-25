@@ -37,7 +37,7 @@ report_fail() {
 
 # Function: List the variable names that sample.env assigns
 sample_env_variables() {
-    grep -oE '^[A-Z_]+=' "$SAMPLE_ENV" | tr -d '='
+    grep -oE '^[A-Z0-9_]+=' "$SAMPLE_ENV" | tr -d '='
 }
 
 # Function: Print the value that sample.env assigns to a variable
@@ -74,7 +74,7 @@ test_compose_variables_have_defaults() {
         if ! grep -qE "^$var=" "$SAMPLE_ENV"; then
             missing="$missing $var"
         fi
-    done < <(grep -oE '[$][{][A-Z_]+[}]' "$COMPOSE_FILE" | sed 's/[^A-Z_]//g' | sort -u)
+    done < <(grep -oE '[$][{][A-Z0-9_]+[}]' "$COMPOSE_FILE" | sed 's/[^A-Z0-9_]//g' | sort -u)
     if [ -z "$missing" ]; then
         report_pass "every variable in compose.yml has a default in sample.env"
     else
