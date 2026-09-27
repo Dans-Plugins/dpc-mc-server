@@ -7,7 +7,8 @@
 # documentation in CONFIG.md, and — for a plugin toggle — a JAR under
 # resources/jars/ whose name begins with the prefix given to
 # manage_plugin_dependencies. The Minecraft version is additionally repeated as
-# the Dockerfile's hardcoded BuildTools --rev argument. Nothing else checks that
+# the Dockerfile's hardcoded BuildTools --rev argument, and every bundled plugin
+# is listed in README.md and COMMANDS.md as well. Nothing else checks that
 # these agree, and a disagreement either builds cleanly and then fails at
 # startup or silently starts the server without a plugin. Nothing here runs
 # Docker.
@@ -63,6 +64,26 @@ documented_default() {
             exit
         }
     ' "$CONFIG_DOC"
+}
+
+# Function: Print the sorted external links ("[Name](https://...)") that
+# appear between a heading line and the next line starting with a stop marker
+plugin_links_in_section() {
+    local file="$1"
+    local heading="$2"
+    local stop="$3"
+    awk -v heading="$heading" -v stop="$stop" '
+        $0 == heading { in_section = 1; next }
+        in_section && index($0, stop) == 1 { exit }
+        in_section { print }
+    ' "$file" | grep -oE '\[[^]]+\]\(https?://[^)]+\)' | sort -u
+}
+
+# Function: Print the sorted plugin links from the toggle tables in CONFIG.md
+config_plugin_links() {
+    # The backticks are literal: they delimit the variable name in each table row
+    # shellcheck disable=SC2016
+    grep -E '^\| `[A-Z0-9_]+_ENABLED` \|' "$CONFIG_DOC" | grep -oE '\[[^]]+\]\(https?://[^)]+\)' | sort -u
 }
 
 # Test: every variable compose.yml interpolates has a default in sample.env, so
@@ -155,12 +176,58 @@ test_every_variable_is_documented_with_its_default() {
     fi
 }
 
+# Test: every plugin toggle in sample.env is handed to manage_plugin_dependencies
+# and every variable handed to it has a default in sample.env. A toggle with no
+# call is accepted and then ignored; a call with no default reads an empty value,
+# which the entrypoint rejects as fatal.
+test_every_toggle_has_a_plugin_call() {
+    local toggles
+    local called
+    local unmatched
+    toggles="$(grep -oE '^[A-Z0-9_]+_ENABLED=' "$SAMPLE_ENV" | tr -d '=' | sort -u)"
+    called="$(grep -E '^manage_plugin_dependencies ' "$ENTRYPOINT" | tr -d '"' | awk '{print $3}' | sort -u)"
+    unmatched="$(comm -3 <(echo "$toggles") <(echo "$called") | tr -d '\t' | tr '\n' ' ')"
+    if [ -n "$toggles" ] && [ -z "$unmatched" ]; then
+        report_pass "every plugin toggle in sample.env has a manage_plugin_dependencies call, and vice versa"
+    else
+        report_fail "toggles present in only one of sample.env and the manage_plugin_dependencies calls: $unmatched"
+    fi
+}
+
+# Test: README.md and COMMANDS.md list the same plugins, with the same links, as
+# the CONFIG.md toggle tables, so no document advertises a plugin the server
+# does not bundle or omits one that it does
+test_plugin_lists_agree() {
+    local configured
+    local listed
+    local doc
+    configured="$(config_plugin_links)"
+    if [ -z "$configured" ]; then
+        report_fail "no plugin links found in the CONFIG.md toggle tables"
+        return
+    fi
+    for doc in README COMMANDS; do
+        if [ "$doc" = "README" ]; then
+            listed="$(plugin_links_in_section "$REPO_ROOT/README.md" "### Included Plugins" "## ")"
+        else
+            listed="$(plugin_links_in_section "$REPO_ROOT/COMMANDS.md" "## Plugin Commands" "## ")"
+        fi
+        if [ "$listed" = "$configured" ]; then
+            report_pass "$doc.md lists the same plugins as CONFIG.md"
+        else
+            report_fail "$doc.md and CONFIG.md list different plugins: $(comm -3 <(echo "$listed") <(echo "$configured") | tr -d '\t' | tr '\n' ' ')"
+        fi
+    done
+}
+
 # Main Process
 test_compose_variables_have_defaults
 test_sample_env_variables_reach_the_container
+test_every_toggle_has_a_plugin_call
 test_every_plugin_prefix_matches_one_jar
 test_minecraft_version_matches_build_revision
 test_every_variable_is_documented_with_its_default
+test_plugin_lists_agree
 
 if [ "$failures" -eq 0 ]; then
     echo "WIRING TESTS: PASS"
