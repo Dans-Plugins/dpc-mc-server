@@ -10,6 +10,21 @@ permissions:
   contents: read
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run entrypoint tests
+        run: ./tests/test-post-create.sh
+
+      - name: Run convenience-script tests
+        run: ./tests/test-scripts.sh
+
+      - name: Run wiring tests
+        run: ./tests/test-wiring.sh
+
   build:
     runs-on: ubuntu-latest
 

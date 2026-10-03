@@ -67,6 +67,8 @@ Please fill out a bug report [here](https://github.com/Dans-Plugins/dpc-mc-serve
 
 ## Testing
 
+The three test scripts below run without Docker or network access, and the `test` job of the `Build` workflow runs all of them on every push to and pull request against `main`.
+
 ### Validating the Entrypoint Script
 
 ```

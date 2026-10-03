@@ -73,6 +73,8 @@ Run the wiring tests, which check that `sample.env`, `compose.yml`, `resources/p
 
 A passing run ends with `WIRING TESTS: PASS` and exits `0`.
 
+The `test` job of the `Build` workflow runs all three scripts on every pull request, so a failure in any of them fails the pull request's checks. Running them locally first gives the same result in under a second.
+
 Validate the Docker image builds successfully:
 
 ```
