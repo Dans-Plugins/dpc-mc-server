@@ -33,12 +33,12 @@ The management commands below are used to operate the server from the host machi
 
 ### Open a shell inside the container
 
-**Description:** Attach an interactive Bash session to the running container so you can inspect or modify server files.  
+**Description:** Open an interactive Bash session in the running container so you can inspect or modify server files. This is a shell, not the Minecraft server console, so server commands such as `stop` are not understood here.  
 **Usage:** `docker exec -it dpc-mc-server /bin/bash`
 
 ### Rebuild the image
 
-**Description:** Rebuild the Docker image from scratch (e.g. after changing `Dockerfile` or updating plugin JARs).  
+**Description:** Build the Docker image without starting or recreating the container, for example to check that a change to the `Dockerfile` or to `resources/` still builds. Docker's layer cache is reused, so this is not a build from scratch; add `--no-cache` to force one. The running container keeps using the old image until it is recreated: `./up.sh` both rebuilds the image and recreates the container, so it is the command that puts a change into service.  
 **Usage:** `docker build -t dpc-mc-server .`
 
 ## Plugin Commands
