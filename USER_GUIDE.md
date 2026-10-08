@@ -47,11 +47,13 @@ This restarts the existing container without recreating it, which is what you wa
 docker logs -f dpc-mc-server
 ```
 
-### Accessing the Server Console
+### Opening a Shell in the Container
 
 ```
 docker exec -it dpc-mc-server /bin/bash
 ```
+
+This opens a Bash shell inside the container, not the Minecraft server console: commands typed here are shell commands, and a server command such as `stop` or `op` is not understood. `compose.yml` does not set `stdin_open` or `tty` for the service, so the server's own console does not accept typed input either. Issue server commands in-game as the operator configured by `OPERATOR_UUID` and `OPERATOR_NAME`.
 
 ### Modifying Server Files
 

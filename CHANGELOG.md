@@ -28,6 +28,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added an "Apply a change made to `.env`" entry to `COMMANDS.md` and noted the limitation of `docker compose restart` on the restart entry.
 - Listed the bundled third-party plugins in `COMMANDS.md` so that its plugin list matches `README.md` and `CONFIG.md`.
 - Noted in `README.md` and `CONFIG.md` that not every bundled plugin is enabled by default and that toggle changes require recreating the container.
+- Renamed "Accessing the Server Console" in `USER_GUIDE.md` to "Opening a Shell in the Container". `docker exec -it dpc-mc-server /bin/bash` opens a Bash shell, not the Minecraft console, and the console does not accept typed input because `compose.yml` sets neither `stdin_open` nor `tty`. `COMMANDS.md` now says the same.
+- Corrected the "Rebuild the image" entry in `COMMANDS.md`, which described `docker build` as a rebuild "from scratch" for use after updating plugin JARs. The build reuses Docker's layer cache, and the running container keeps the old image until `./up.sh` recreates it.
 
 ## [1.0.0] – 2024-01-01
 
