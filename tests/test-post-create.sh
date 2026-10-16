@@ -73,6 +73,23 @@ test_enabled_copies_jar() {
     teardown_fixture
 }
 
+# Test: a toggle set to "true" replaces a differently-versioned JAR that is
+# already installed under the same prefix, rather than copying alongside it
+test_enabled_replaces_installed_version() {
+    setup_fixture
+    touch "$SERVER_DIR/plugins/TestPlugin-0.9.0.jar"
+    TEST_PLUGIN_ENABLED=true
+    manage_plugin_dependencies "TestPlugin" "TEST_PLUGIN_ENABLED" > /dev/null
+    if [ -f "$SERVER_DIR/plugins/TestPlugin-0.9.0.jar" ]; then
+        report_fail "an enabled toggle left the previously installed TestPlugin-0.9.0.jar beside the bundled JAR"
+    elif [ ! -f "$SERVER_DIR/plugins/TestPlugin-1.0.0.jar" ]; then
+        report_fail "an enabled toggle removed the installed version but did not copy the bundled JAR"
+    else
+        report_pass "an enabled toggle replaces a previously installed version of the plugin JAR"
+    fi
+    teardown_fixture
+}
+
 # Test: a toggle set to "false" removes an already-installed plugin JAR
 test_disabled_removes_jar() {
     setup_fixture
@@ -141,6 +158,7 @@ test_every_dispatched_toggle_has_a_default() {
 load_entrypoint_functions
 
 test_enabled_copies_jar
+test_enabled_replaces_installed_version
 test_disabled_removes_jar
 test_invalid_value_exits_non_zero
 test_every_toggle_is_dispatched_unconditionally
