@@ -33,6 +33,8 @@
 ./down.sh
 ```
 
+The server receives `SIGTERM` and shuts down cleanly, saving the worlds and letting plugins run their shutdown handlers. Docker waits 10 seconds for this before killing the server; a large world that takes longer to save is cut off.
+
 ### Restarting the Server
 
 ```

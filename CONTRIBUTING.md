@@ -49,7 +49,7 @@ Issues are grouped into [milestones](https://github.com/Dans-Plugins/dpc-mc-serv
 
 ## Testing
 
-Run the entrypoint tests, which check the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree:
+Run the entrypoint tests, which check the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree, and that `start_server` replaces the script's shell with `java`:
 
 ```
 ./tests/test-post-create.sh

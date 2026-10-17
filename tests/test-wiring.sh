@@ -155,6 +155,19 @@ test_minecraft_version_matches_build_revision() {
     fi
 }
 
+# Test: the Dockerfile starts the entrypoint in exec form. The shell form wraps
+# it in "/bin/sh -c", which becomes PID 1 and does not pass SIGTERM on, so
+# "docker stop" kills the server instead of letting it save and shut down.
+test_entrypoint_uses_exec_form() {
+    local entrypoint
+    entrypoint="$(grep -E '^ENTRYPOINT ' "$DOCKERFILE")"
+    if [ "$entrypoint" = 'ENTRYPOINT ["/resources/post-create.sh"]' ]; then
+        report_pass "the Dockerfile ENTRYPOINT uses the exec form"
+    else
+        report_fail "the Dockerfile ENTRYPOINT is '$entrypoint', expected the exec form 'ENTRYPOINT [\"/resources/post-create.sh\"]'"
+    fi
+}
+
 # Test: every variable in sample.env is documented in CONFIG.md with the same
 # default that sample.env actually sets
 test_every_variable_is_documented_with_its_default() {
@@ -226,6 +239,7 @@ test_sample_env_variables_reach_the_container
 test_every_toggle_has_a_plugin_call
 test_every_plugin_prefix_matches_one_jar
 test_minecraft_version_matches_build_revision
+test_entrypoint_uses_exec_form
 test_every_variable_is_documented_with_its_default
 test_plugin_lists_agree
 

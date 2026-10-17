@@ -72,10 +72,10 @@ update_bluemap_config() {
     sed -i 's/accept-download: false/accept-download: true/g' "$SERVER_DIR"/plugins/bluemap/core.conf
 }
 
-# Function: Start server
+# Function: Start server, replacing this shell so that java receives SIGTERM
 start_server() {
     log "Starting server..."
-    java -jar "$SERVER_DIR"/spigot-"${MINECRAFT_VERSION}".jar
+    exec java -jar "$SERVER_DIR"/spigot-"${MINECRAFT_VERSION}".jar
 }
 
 # Main Process
