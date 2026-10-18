@@ -99,7 +99,7 @@ The script checks that the configuration files agree with each other: every vari
 docker build -t dpc-mc-server-test .
 ```
 
-A successful build produces a `Successfully built` message at the end of the output. Note that the build only proves the image compiles; `resources/post-create.sh` is the image's entrypoint and is never executed during a build.
+A successful build exits `0`. Near the end of its output it prints a `naming to docker.io/library/dpc-mc-server-test` step under BuildKit, the default builder in current Docker releases, or a `Successfully built` message under the legacy builder. Note that the build only proves the image compiles; `resources/post-create.sh` is the image's entrypoint and is never executed during a build.
 
 ## Development
 

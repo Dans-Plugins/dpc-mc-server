@@ -64,6 +64,8 @@ This opens a Bash shell inside the container, not the Minecraft server console: 
 3. Run `exit` to leave the container.
 4. Run `docker compose restart` to apply the changes.
 
+The entrypoint script runs again on every restart and rewrites some files, so edits to these do not survive: `ops.json` is regenerated from the `OPERATOR_*` variables (see [CONFIG.md](CONFIG.md#operator_uuid)), `eula.txt` is rewritten, `plugins/MedievalFactions/lang` is deleted, and every bundled plugin JAR is replaced or removed according to its toggle.
+
 ### Adding Plugins to the Deposit Box
 
 Place plugin JARs or override configuration files in the `deposit-box/` directory before starting the server. The container bind-mounts this directory so that its contents are available at `/deposit-box` inside the container.

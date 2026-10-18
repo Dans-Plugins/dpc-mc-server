@@ -10,6 +10,14 @@ All configuration is done through environment variables. Copy `sample.env` to `.
 
 **Changing the Minecraft version therefore requires editing two places:** this variable *and* the `--rev` argument in the `Dockerfile`. If the two disagree, the image still builds successfully and the container then exits at startup, because the JAR it has been told to launch was never produced.
 
+**An existing server directory is not updated by a version change.** The entrypoint copies `spigot-<MINECRAFT_VERSION>.jar` from the image into `/dpcmcserver` only when that directory is empty or `OVERWRITE_EXISTING_SERVER` is `true`. Against an existing world, a rebuilt image with a new version therefore starts with the new JAR still missing from the server directory, and the container exits. To upgrade without resetting the world, build the new image and copy its JAR into the volume before starting the server:
+
+```
+docker compose build
+docker compose run --rm --entrypoint cp dpcmcserver /dpcmcserver-build/spigot-<MINECRAFT_VERSION>.jar /dpcmcserver/
+./up.sh
+```
+
 **Example:**
 
 ```env
@@ -20,7 +28,9 @@ MINECRAFT_VERSION=1.21.4
 
 **Type:** string (UUID)  
 **Default:** `0a9fa342-3139-49d7-8acb-fcf4d9c1f0ef`  
-**Description:** The UUID of the player who should be granted operator status on first run. Obtain your UUID from a service such as [mcuuid.net](https://mcuuid.net/).
+**Description:** The UUID of the player who is granted operator status. Obtain your UUID from a service such as [mcuuid.net](https://mcuuid.net/).
+
+The entrypoint rewrites `ops.json` from `OPERATOR_UUID`, `OPERATOR_NAME`, and `OPERATOR_LEVEL` on **every** container start, including `docker compose restart`, not only on first run. The file always lists exactly this one operator: players opped in-game with `/op`, and edits made to `ops.json` inside the container, are lost at the next start.
 
 **Example:**
 
@@ -106,3 +116,5 @@ Any other value – including an empty value or a typo such as `ture` – is a f
 | `PLACEHOLDER_API_ENABLED` | `true` | [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) |
 | `VIA_BACKWARDS_ENABLED` | `true` | [ViaBackwards](https://www.spigotmc.org/resources/viabackwards.27448/) |
 | `VIA_VERSION_ENABLED` | `true` | [ViaVersion](https://www.spigotmc.org/resources/viaversion.19254/) |
+
+When `BLUEMAP_ENABLED` is `true`, the entrypoint also sets `accept-download: true` in `plugins/bluemap/core.conf` on each start, accepting BlueMap's download of the Minecraft client resources on the operator's behalf. That file is created by BlueMap itself the first time the server loads it, after the entrypoint has already run, so on the first start with BlueMap enabled the edit fails with `No such file or directory` in the log and the setting takes effect from the next start.
