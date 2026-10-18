@@ -154,6 +154,35 @@ test_every_dispatched_toggle_has_a_default() {
     fi
 }
 
+# Test: start_server replaces the entrypoint's shell with java rather than
+# starting it as a child, so that java is the process Docker sends SIGTERM to.
+# A stub java on PATH records its own PID; it matches the shell's PID only if
+# the shell was replaced.
+test_start_server_execs_java() {
+    setup_fixture
+    mkdir -p "$FIXTURE_DIR/bin"
+    # The $$ is literal: it is expanded by the stub, not here
+    # shellcheck disable=SC2016
+    printf '#!/bin/sh\necho "$$" > "%s"\n' "$FIXTURE_DIR/java.pid" > "$FIXTURE_DIR/bin/java"
+    chmod +x "$FIXTURE_DIR/bin/java"
+    local output
+    local shell_pid
+    local java_pid
+    output="$(PATH="$FIXTURE_DIR/bin:$PATH"; echo "$BASHPID"; start_server > /dev/null; echo "returned")"
+    shell_pid="$(echo "$output" | head -n 1)"
+    java_pid="$(cat "$FIXTURE_DIR/java.pid" 2> /dev/null)"
+    if [ -z "$java_pid" ]; then
+        report_fail "start_server did not run java"
+    elif echo "$output" | grep -q '^returned$'; then
+        report_fail "start_server returned after java exited, so java ran as a child of the shell and SIGTERM does not reach it"
+    elif [ "$java_pid" = "$shell_pid" ]; then
+        report_pass "start_server replaces the shell with java"
+    else
+        report_fail "java ran as PID $java_pid rather than replacing the shell (PID $shell_pid)"
+    fi
+    teardown_fixture
+}
+
 # Main Process
 load_entrypoint_functions
 
@@ -163,6 +192,7 @@ test_disabled_removes_jar
 test_invalid_value_exits_non_zero
 test_every_toggle_is_dispatched_unconditionally
 test_every_dispatched_toggle_has_a_default
+test_start_server_execs_java
 
 if [ "$failures" -eq 0 ]; then
     echo "POST-CREATE TESTS: PASS"

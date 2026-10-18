@@ -13,7 +13,7 @@ The management commands below are used to operate the server from the host machi
 
 ### Stop the server
 
-**Description:** Stop and remove the running server container.  
+**Description:** Stop and remove the running server container. The server receives `SIGTERM` and saves before it exits; Docker kills it if it has not exited after 10 seconds.  
 **Usage:** `./down.sh`
 
 ### Restart the server
