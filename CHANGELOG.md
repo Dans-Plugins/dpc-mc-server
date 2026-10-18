@@ -32,6 +32,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Noted in `README.md` and `CONFIG.md` that not every bundled plugin is enabled by default and that toggle changes require recreating the container.
 - Renamed "Accessing the Server Console" in `USER_GUIDE.md` to "Opening a Shell in the Container". `docker exec -it dpc-mc-server /bin/bash` opens a Bash shell, not the Minecraft console, and the console does not accept typed input because `compose.yml` sets neither `stdin_open` nor `tty`. `COMMANDS.md` now says the same.
 - Corrected the "Rebuild the image" entry in `COMMANDS.md`, which described `docker build` as a rebuild "from scratch" for use after updating plugin JARs. The build reuses Docker's layer cache, and the running container keeps the old image until `./up.sh` recreates it.
+- Documented in `CONFIG.md` and `USER_GUIDE.md` what the entrypoint rewrites on every start. `ops.json` is regenerated from the `OPERATOR_*` variables each time, so in-game `/op` grants are lost; `CONFIG.md` previously said the operator was set "on first run". Also documented that changing `MINECRAFT_VERSION` does not update an existing server directory, along with how to copy the new Spigot JAR into the volume, and that BlueMap's `accept-download` setting is only applied from the second start with BlueMap enabled.
+- Corrected the `docker build` success message in `README.md`. `Successfully built` is printed only by the legacy builder; BuildKit, which current Docker releases use by default, prints a `naming to` step instead.
 
 ## [1.0.0] – 2024-01-01
 
