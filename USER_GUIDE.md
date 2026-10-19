@@ -87,6 +87,8 @@ Edit `.env` and set the corresponding `<PLUGIN>_ENABLED` variable to `true` or `
 
 Only `true` and `false` are accepted. Any other value stops the container before the server starts; run `docker logs dpc-mc-server` to see which variable was rejected.
 
+Disabling Medieval-Factions leaves Currencies and Fiefs unable to load, and disabling ViaVersion does the same to ViaBackwards; see [Plugin Dependencies](CONFIG.md#plugin-dependencies).
+
 `docker compose restart` is not sufficient here. The toggles reach the entrypoint script through the container's environment, which is fixed when the container is created, so a restarted container still sees the old values.
 
 ### Resetting the Server

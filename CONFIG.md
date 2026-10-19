@@ -118,3 +118,19 @@ Any other value – including an empty value or a typo such as `ture` – is a f
 | `VIA_VERSION_ENABLED` | `true` | [ViaVersion](https://www.spigotmc.org/resources/viaversion.19254/) |
 
 When `BLUEMAP_ENABLED` is `true`, the entrypoint also sets `accept-download: true` in `plugins/bluemap/core.conf` on each start, accepting BlueMap's download of the Minecraft client resources on the operator's behalf. That file is created by BlueMap itself the first time the server loads it, after the entrypoint has already run, so on the first start with BlueMap enabled the edit fails with `No such file or directory` in the log and the setting takes effect from the next start.
+
+---
+
+## Plugin Dependencies
+
+The toggles are applied independently: the entrypoint does not check whether a plugin that is enabled requires one that is disabled. Three bundled plugins declare a required dependency (`depend:` in their `plugin.yml`) on another bundled plugin:
+
+| Toggle | Requires |
+|--------|----------|
+| `CURRENCIES_ENABLED` | `MEDIEVAL_FACTIONS_ENABLED` |
+| `FIEFS_ENABLED` | `MEDIEVAL_FACTIONS_ENABLED` |
+| `VIA_BACKWARDS_ENABLED` | `VIA_VERSION_ENABLED` |
+
+If the required plugin is disabled, the dependent plugin's JAR is still copied into `plugins/`, but Spigot refuses to load it and logs an unknown-dependency error at startup. The server itself still starts. Disable the dependent plugin as well, or keep the required one enabled.
+
+Other bundled plugins declare optional integrations (`softdepend:`) only, and load without them: Medieval-Factions with Dynmap, PlaceholderAPI, and Mailboxes; Medieval-Roleplay-Engine with PlaceholderAPI, Medieval-Factions, and Mailboxes.
