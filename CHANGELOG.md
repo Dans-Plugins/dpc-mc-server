@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Documented in `CONFIG.md` the required dependencies between bundled plugins — Currencies and Fiefs on Medieval-Factions, ViaBackwards on ViaVersion — as declared in each JAR's `plugin.yml`. Disabling the required plugin leaves the dependent one installed but unloaded by Spigot; the entrypoint does not check this. `USER_GUIDE.md` links to the new section.
 - Documented in `USER_GUIDE.md` that the `deposit-box/` directory is a staging area only, with no automatic installation, and described how a deposited JAR interacts with the bundled plugin toggles.
 - Added an "Apply a change made to `.env`" entry to `COMMANDS.md` and noted the limitation of `docker compose restart` on the restart entry.
 - Listed the bundled third-party plugins in `COMMANDS.md` so that its plugin list matches `README.md` and `CONFIG.md`.
