@@ -8,7 +8,9 @@
 # resources/jars/ whose name begins with the prefix given to
 # manage_plugin_dependencies. The Minecraft version is additionally repeated as
 # the Dockerfile's hardcoded BuildTools --rev argument, and every bundled plugin
-# is listed in README.md and COMMANDS.md as well. Nothing else checks that
+# is listed in README.md and COMMANDS.md as well, and the required dependencies
+# declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md.
+# Nothing else checks that
 # these agree, and a disagreement either builds cleanly and then fails at
 # startup or silently starts the server without a plugin. Nothing here runs
 # Docker.
@@ -84,6 +86,83 @@ config_plugin_links() {
     # The backticks are literal: they delimit the variable name in each table row
     # shellcheck disable=SC2016
     grep -E '^\| `[A-Z0-9_]+_ENABLED` \|' "$CONFIG_DOC" | grep -oE '\[[^]]+\]\(https?://[^)]+\)' | sort -u
+}
+
+# Function: List "<prefix> <toggle>" for every manage_plugin_dependencies call
+plugin_calls() {
+    grep -E '^manage_plugin_dependencies ' "$ENTRYPOINT" | tr -d '"' | awk '{print $2, $3}'
+}
+
+# Function: Print the bundled JAR that a manage_plugin_dependencies prefix installs
+jar_for_prefix() {
+    find "$JARS_DIR" -maxdepth 1 -type f -name "$1-*.jar" | head -n 1
+}
+
+# Function: Print the plugin name from a JAR's plugin.yml on the first line,
+# then each plugin named in its required "depend:" list on a line of its own.
+# Both the inline ("depend: [A, B]") and block ("- A") list forms are read.
+plugin_name_and_requirements() {
+    unzip -p "$1" plugin.yml | tr -d "\r\"'" | awk '
+        /^name:/ { name = $0; sub(/^name:[ \t]*/, "", name); sub(/[ \t]+$/, "", name) }
+        /^depend:/ {
+            in_depend = 1
+            line = $0
+            sub(/^depend:/, "", line)
+            gsub(/\[/, " ", line)
+            gsub(/\]/, " ", line)
+            gsub(/,/, " ", line)
+            requirements = requirements " " line
+            next
+        }
+        in_depend && /^[ \t]*- / { line = $0; sub(/^[ \t]*- /, "", line); requirements = requirements " " line; next }
+        { in_depend = 0 }
+        END {
+            print name
+            count = split(requirements, required, " ")
+            for (i = 1; i <= count; i++) print required[i]
+        }
+    '
+}
+
+# Function: Print the sorted dependency-table rows that the bundled JARs imply:
+# one "| `<toggle>` | `<required toggle>` |" row for every required dependency
+# of a bundled plugin on another bundled plugin
+required_dependency_rows() {
+    local plugins
+    local prefix
+    local var
+    local jar
+    local required
+    local required_var
+    plugins="$(plugin_calls | while read -r prefix var; do
+        jar="$(jar_for_prefix "$prefix")"
+        if [ -n "$jar" ]; then
+            echo "$(plugin_name_and_requirements "$jar" | head -n 1) $var"
+        fi
+    done)"
+    while read -r prefix var; do
+        jar="$(jar_for_prefix "$prefix")"
+        if [ -z "$jar" ]; then
+            continue
+        fi
+        while read -r required; do
+            required_var="$(echo "$plugins" | awk -v name="$required" '$1 == name {print $2}')"
+            if [ -n "$required_var" ]; then
+                echo "| \`$var\` | \`$required_var\` |"
+            fi
+        done < <(plugin_name_and_requirements "$jar" | tail -n +2)
+    done < <(plugin_calls) | sort
+}
+
+# Function: Print the sorted rows of the CONFIG.md "## Plugin Dependencies" table
+documented_dependency_rows() {
+    # The backticks are literal: they delimit the variable names in each table row
+    # shellcheck disable=SC2016
+    awk '
+        $0 == "## Plugin Dependencies" { in_section = 1; next }
+        in_section && /^## / { exit }
+        in_section { print }
+    ' "$CONFIG_DOC" | grep -E '^\| `[A-Z0-9_]+_ENABLED` \| `[A-Z0-9_]+_ENABLED` \|$' | sort
 }
 
 # Test: every variable compose.yml interpolates has a default in sample.env, so
@@ -233,6 +312,26 @@ test_plugin_lists_agree() {
     done
 }
 
+# Test: the CONFIG.md "Plugin Dependencies" table lists exactly the required
+# dependencies that the bundled JARs declare on each other. A JAR is binary, so
+# a replacement that gains or loses a "depend:" entry shows no diff, and the
+# table would otherwise go stale unnoticed.
+test_dependency_table_matches_plugin_metadata() {
+    local expected
+    local documented
+    if ! command -v unzip > /dev/null; then
+        report_fail "unzip is not installed, so the plugin.yml of each bundled JAR cannot be read"
+        return
+    fi
+    expected="$(required_dependency_rows)"
+    documented="$(documented_dependency_rows)"
+    if [ "$documented" = "$expected" ]; then
+        report_pass "the CONFIG.md dependency table matches the depend: entries of the bundled JARs"
+    else
+        report_fail "the CONFIG.md dependency table and the bundled JARs disagree (rows found in only one of them): $(comm -3 <(echo "$documented") <(echo "$expected") | tr -d '\t' | tr '\n' ' ')"
+    fi
+}
+
 # Main Process
 test_compose_variables_have_defaults
 test_sample_env_variables_reach_the_container
@@ -242,6 +341,7 @@ test_minecraft_version_matches_build_revision
 test_entrypoint_uses_exec_form
 test_every_variable_is_documented_with_its_default
 test_plugin_lists_agree
+test_dependency_table_matches_plugin_metadata
 
 if [ "$failures" -eq 0 ]; then
     echo "WIRING TESTS: PASS"
