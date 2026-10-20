@@ -131,6 +131,8 @@ The toggles are applied independently: the entrypoint does not check whether a p
 | `FIEFS_ENABLED` | `MEDIEVAL_FACTIONS_ENABLED` |
 | `VIA_BACKWARDS_ENABLED` | `VIA_VERSION_ENABLED` |
 
+`tests/test-wiring.sh` fails if this table and the `depend:` entries in the bundled JARs disagree, so replacing a JAR that gains or loses a requirement also requires updating the table.
+
 If the required plugin is disabled, the dependent plugin's JAR is still copied into `plugins/`, but Spigot refuses to load it and logs an unknown-dependency error at startup. The server itself still starts. Disable the dependent plugin as well, or keep the required one enabled.
 
 Two further bundled plugins declare optional integrations (`softdepend:`) with other bundled plugins. These are not requirements, and both plugins load with the integrations disabled: Medieval-Factions with Dynmap, PlaceholderAPI, and Mailboxes; Medieval-Roleplay-Engine with PlaceholderAPI, Medieval-Factions, and Mailboxes.
