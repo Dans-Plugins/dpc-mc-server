@@ -10,7 +10,8 @@
 # the Dockerfile's hardcoded BuildTools --rev argument, and every bundled plugin
 # is listed in README.md and COMMANDS.md as well, and the required dependencies
 # declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md.
-# Nothing else checks that
+# The ports and container name set in compose.yml are repeated in USER_GUIDE.md
+# and in the documented docker logs/exec commands. Nothing else checks that
 # these agree, and a disagreement either builds cleanly and then fails at
 # startup or silently starts the server without a plugin. Nothing here runs
 # Docker.
@@ -24,6 +25,7 @@ ENTRYPOINT="$REPO_ROOT/resources/post-create.sh"
 JARS_DIR="$REPO_ROOT/resources/jars"
 DOCKERFILE="$REPO_ROOT/Dockerfile"
 CONFIG_DOC="$REPO_ROOT/CONFIG.md"
+USER_GUIDE="$REPO_ROOT/USER_GUIDE.md"
 
 failures=0
 
@@ -163,6 +165,31 @@ documented_dependency_rows() {
         in_section && /^## / { exit }
         in_section { print }
     ' "$CONFIG_DOC" | grep -E '^\| `[A-Z0-9_]+_ENABLED` \| `[A-Z0-9_]+_ENABLED` \|$' | sort
+}
+
+# Function: Print the sorted host ports that the compose.yml ports list publishes
+compose_published_ports() {
+    awk '
+        /^ +ports:/ { in_ports = 1; next }
+        in_ports && /^ +- / { print; next }
+        in_ports { exit }
+    ' "$COMPOSE_FILE" | tr -d ' "-' | awk -F ':' '{print $(NF - 1)}' | sort -u
+}
+
+# Function: Print the sorted ports named on the USER_GUIDE.md "- Ports" prerequisite line
+documented_host_ports() {
+    # The backticks are literal: they delimit each port number on the line
+    # shellcheck disable=SC2016
+    grep -E '^- Ports ' "$USER_GUIDE" | grep -oE '`[0-9]+`' | tr -d '`' | sort -u
+}
+
+# Function: Print the container name given to every "docker logs" and
+# "docker exec" command in the current documentation, one per line
+documented_container_names() {
+    local doc
+    for doc in README.md USER_GUIDE.md COMMANDS.md CONFIG.md CONTRIBUTING.md; do
+        grep -oE 'docker (logs|exec)( -[a-z]+)* [A-Za-z0-9_.-]+' "$REPO_ROOT/$doc" | awk '{print $NF}'
+    done
 }
 
 # Test: every variable compose.yml interpolates has a default in sample.env, so
@@ -332,6 +359,42 @@ test_dependency_table_matches_plugin_metadata() {
     fi
 }
 
+# Test: the ports USER_GUIDE.md tells users to free on their host are exactly
+# the host ports compose.yml publishes, so a port added, removed, or remapped in
+# compose.yml cannot leave the prerequisites describing a different set
+test_published_ports_are_documented() {
+    local published
+    local documented
+    published="$(compose_published_ports)"
+    documented="$(documented_host_ports)"
+    if [ -n "$published" ] && [ "$published" = "$documented" ]; then
+        report_pass "USER_GUIDE.md lists the host ports that compose.yml publishes ($(echo "$published" | paste -sd ' '))"
+    else
+        report_fail "compose.yml publishes host ports '$(echo "$published" | paste -sd ' ')' but USER_GUIDE.md lists '$(echo "$documented" | paste -sd ' ')'"
+    fi
+}
+
+# Test: every "docker logs" and "docker exec" command in the documentation names
+# the container_name that compose.yml sets, since a renamed container makes each
+# of those commands fail with "No such container"
+test_documented_container_name_matches_compose() {
+    local expected
+    local names
+    local mismatched
+    expected="$(grep -E '^ +container_name:' "$COMPOSE_FILE" | awk '{print $2}')"
+    names="$(documented_container_names)"
+    if [ -z "$expected" ] || [ -z "$names" ]; then
+        report_fail "no container_name in compose.yml ('$expected') or no docker logs/exec commands in the documentation"
+        return
+    fi
+    mismatched="$(echo "$names" | grep -vxF -- "$expected" | sort -u | paste -sd ' ')"
+    if [ -z "$mismatched" ]; then
+        report_pass "every documented docker logs/exec command names the compose.yml container ($expected)"
+    else
+        report_fail "documented docker logs/exec commands name '$mismatched' but compose.yml sets container_name '$expected'"
+    fi
+}
+
 # Main Process
 test_compose_variables_have_defaults
 test_sample_env_variables_reach_the_container
@@ -342,6 +405,8 @@ test_entrypoint_uses_exec_form
 test_every_variable_is_documented_with_its_default
 test_plugin_lists_agree
 test_dependency_table_matches_plugin_metadata
+test_published_ports_are_documented
+test_documented_container_name_matches_compose
 
 if [ "$failures" -eq 0 ]; then
     echo "WIRING TESTS: PASS"
