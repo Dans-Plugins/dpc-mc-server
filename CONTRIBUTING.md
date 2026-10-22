@@ -14,6 +14,7 @@ Thank you for your interest in contributing to DPC MC Server! This guide will he
 - A GitHub account
 - Git installed on your local machine
 - [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed locally
+- `unzip` installed locally, which `tests/test-wiring.sh` uses to read each bundled JAR's `plugin.yml`
 - A basic understanding of Docker and shell scripting
 
 ## Getting Started
