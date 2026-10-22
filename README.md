@@ -91,7 +91,7 @@ The script checks that `up.sh` and `down.sh` are tracked as executable, start wi
 ./tests/test-wiring.sh
 ```
 
-The script checks that the configuration files agree with each other: every variable interpolated in `compose.yml` has a default in `sample.env` and every variable in `sample.env` is forwarded by `compose.yml`; every `*_ENABLED` toggle in `sample.env` is handed to `manage_plugin_dependencies` and every variable handed to it is defined in `sample.env`; every plugin prefix passed to `manage_plugin_dependencies` matches exactly one JAR in `resources/jars/` (case-sensitively); `MINECRAFT_VERSION` equals the `--rev` argument in the `Dockerfile`; the `Dockerfile` `ENTRYPOINT` uses the exec form; every variable in `sample.env` is documented in `CONFIG.md` with the default that `sample.env` sets; the plugin lists in `README.md` and `COMMANDS.md` contain exactly the plugins, with the same links, as the `CONFIG.md` toggle tables; and the `CONFIG.md` Plugin Dependencies table lists exactly the required dependencies (`depend:` in `plugin.yml`, read from each JAR with `unzip`) that bundled plugins declare on other bundled plugins; the ports listed under Prerequisites in `USER_GUIDE.md` are exactly the host ports `compose.yml` publishes; and every `docker logs` and `docker exec` command in the documentation names the `container_name` that `compose.yml` sets. It prints `WIRING TESTS: PASS` and exits `0` when every assertion holds. Nothing is run under Docker.
+The script checks that the configuration files agree with each other: every variable interpolated in `compose.yml` has a default in `sample.env` and every variable in `sample.env` is forwarded by `compose.yml`; every `*_ENABLED` toggle in `sample.env` is handed to `manage_plugin_dependencies` and every variable handed to it is defined in `sample.env`; every plugin prefix passed to `manage_plugin_dependencies` matches exactly one JAR in `resources/jars/` (case-sensitively); `MINECRAFT_VERSION` equals the `--rev` argument in the `Dockerfile`; the `Dockerfile` `ENTRYPOINT` uses the exec form; every variable in `sample.env` is documented in `CONFIG.md` with the default that `sample.env` sets; the plugin lists in `README.md` and `COMMANDS.md` contain exactly the plugins, with the same links, as the `CONFIG.md` toggle tables; the `CONFIG.md` Plugin Dependencies table lists exactly the required dependencies (`depend:` in `plugin.yml`, read from each JAR with `unzip`) that bundled plugins declare on other bundled plugins; the ports listed under Prerequisites in `USER_GUIDE.md` are exactly the host ports `compose.yml` publishes; and every `docker logs` and `docker exec` command in the documentation names the `container_name` that `compose.yml` sets. It prints `WIRING TESTS: PASS` and exits `0` when every assertion holds. Nothing is run under Docker.
 
 ### Validating the Docker Build
 
@@ -120,6 +120,8 @@ The server will be accessible at `localhost:25565`.
 2. You will now be in the server's filesystem. Modify files as needed.
 3. When you are done, run `exit` to exit the container.
 4. Run `docker compose restart` to restart the server with your changes.
+
+The entrypoint script runs again on every restart and rewrites some files, including `ops.json`, `eula.txt`, and the bundled plugin JARs, so edits to those do not survive. See [Modifying Server Files](USER_GUIDE.md#modifying-server-files) in the User Guide for the full list.
 
 #### Stopping the Test Server
 
