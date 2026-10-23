@@ -11,7 +11,8 @@
 # is listed in README.md and COMMANDS.md as well, and the required dependencies
 # declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md.
 # The ports and container name set in compose.yml are repeated in USER_GUIDE.md
-# and in the documented docker logs/exec commands. Nothing else checks that
+# and in the documented docker logs/exec commands, and the files the entrypoint
+# rewrites on every start are listed in USER_GUIDE.md. Nothing else checks that
 # these agree, and a disagreement either builds cleanly and then fails at
 # startup or silently starts the server without a plugin. Nothing here runs
 # Docker.
@@ -190,6 +191,30 @@ documented_container_names() {
     for doc in README.md USER_GUIDE.md COMMANDS.md CONFIG.md CONTRIBUTING.md; do
         grep -oE 'docker (logs|exec)( -[a-z]+)* [A-Za-z0-9_.-]+' "$REPO_ROOT/$doc" | awk '{print $NF}'
     done
+}
+
+# Function: Print the sorted literal paths that post-create.sh writes as
+# "$SERVER_DIR"/<path>, outside setup_server and start_server, which only run
+# on first setup or launch the server, and outside manage_plugin_dependencies,
+# whose per-plugin JARs the guide describes generically. A path built from a
+# variable ends at the variable and is left out.
+entrypoint_rewritten_paths() {
+    # The dollar sign is literal: the paths are matched as written in the script
+    # shellcheck disable=SC2016
+    awk '
+        /^[a-z_]+\(\) \{/ { name = $1; sub(/\(\)$/, "", name); next }
+        /^\}/ { name = ""; next }
+        name != "setup_server" && name != "start_server" && name != "manage_plugin_dependencies" { print }
+    ' "$ENTRYPOINT" | grep -oE '"[$]SERVER_DIR"/[A-Za-z0-9_./-]+' | cut -d '/' -f 2- | grep -v '/$' | sort -u
+}
+
+# Function: Print the "### Modifying Server Files" section of USER_GUIDE.md
+modifying_server_files_section() {
+    awk '
+        $0 == "### Modifying Server Files" { in_section = 1; next }
+        in_section && /^#/ { exit }
+        in_section { print }
+    ' "$USER_GUIDE"
 }
 
 # Test: every variable compose.yml interpolates has a default in sample.env, so
@@ -395,6 +420,33 @@ test_documented_container_name_matches_compose() {
     fi
 }
 
+# Test: every file the entrypoint rewrites on each start is named in the
+# USER_GUIDE.md "Modifying Server Files" section, which warns that edits to
+# those files do not survive a restart. A rewrite added to post-create.sh
+# would otherwise leave that list incomplete with nothing to flag it.
+test_rewritten_files_are_documented() {
+    local paths
+    local section
+    local path
+    local undocumented=""
+    paths="$(entrypoint_rewritten_paths)"
+    section="$(modifying_server_files_section)"
+    if [ -z "$paths" ] || [ -z "$section" ]; then
+        report_fail "no rewritten paths found in post-create.sh or no '### Modifying Server Files' section in USER_GUIDE.md"
+        return
+    fi
+    while read -r path; do
+        if ! echo "$section" | grep -qF -- "\`$path\`"; then
+            undocumented="$undocumented $path"
+        fi
+    done <<< "$paths"
+    if [ -z "$undocumented" ]; then
+        report_pass "USER_GUIDE.md names every file the entrypoint rewrites on start ($(echo "$paths" | paste -sd ' '))"
+    else
+        report_fail "files the entrypoint rewrites on start but USER_GUIDE.md does not name:$undocumented"
+    fi
+}
+
 # Main Process
 test_compose_variables_have_defaults
 test_sample_env_variables_reach_the_container
@@ -407,6 +459,7 @@ test_plugin_lists_agree
 test_dependency_table_matches_plugin_metadata
 test_published_ports_are_documented
 test_documented_container_name_matches_compose
+test_rewritten_files_are_documented
 
 if [ "$failures" -eq 0 ]; then
     echo "WIRING TESTS: PASS"
