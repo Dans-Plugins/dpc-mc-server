@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) installed on your host machine
-- [Docker Compose](https://docs.docker.com/compose/install/) installed
+- [Docker Compose](https://docs.docker.com/compose/install/) v2 installed, which provides the `docker compose` command used by `up.sh`, `down.sh`, and the commands below (the standalone v1 `docker-compose` binary is not enough)
 - [Git](https://git-scm.com/downloads) installed
 - Ports `25565` (game), `8123` (Dynmap), and `8100` (BlueMap) available on your host
 

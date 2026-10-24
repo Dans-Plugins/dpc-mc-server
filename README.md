@@ -9,7 +9,7 @@ DPC MC Server is an infrastructure-as-code Minecraft server for the Dan's Plugin
 ### First Time Installation
 
 1. Install [Docker](https://docs.docker.com/get-docker/).
-2. Install [Docker Compose](https://docs.docker.com/compose/install/).
+2. Install [Docker Compose](https://docs.docker.com/compose/install/) v2, which provides the `docker compose` command that `up.sh` and `down.sh` call. The standalone v1 `docker-compose` binary is not enough.
 3. Install [Git](https://git-scm.com/downloads).
 4. Clone this repository: `git clone https://github.com/Dans-Plugins/dpc-mc-server.git`
 5. Copy `sample.env` to `.env` and configure as needed (see [Configuration Guide](CONFIG.md)).
