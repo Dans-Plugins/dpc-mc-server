@@ -13,7 +13,7 @@ Thank you for your interest in contributing to DPC MC Server! This guide will he
 
 - A GitHub account
 - Git installed on your local machine
-- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed locally
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) v2 (the `docker compose` command, which `up.sh` and `down.sh` call) installed locally
 - `unzip` installed locally, which `tests/test-wiring.sh` uses to read each bundled JAR's `plugin.yml`
 - A basic understanding of Docker and shell scripting
 
@@ -58,7 +58,7 @@ Run the entrypoint tests, which check the plugin-toggle handling in `resources/p
 
 A passing run ends with `POST-CREATE TESTS: PASS` and exits `0`.
 
-Run the convenience-script tests, which check that `up.sh` and `down.sh` are executable, declare a bash shebang, and call the Compose v2 `docker compose` plugin:
+Run the convenience-script tests, which check that `up.sh` and `down.sh` are executable, declare a bash shebang, call the Compose v2 `docker compose` plugin, and pass `bash -n`:
 
 ```
 ./tests/test-scripts.sh
@@ -66,7 +66,16 @@ Run the convenience-script tests, which check that `up.sh` and `down.sh` are exe
 
 A passing run ends with `SCRIPT TESTS: PASS` and exits `0`.
 
-Run the wiring tests, which check that `sample.env`, `compose.yml`, `resources/post-create.sh`, `resources/jars/`, the `Dockerfile`, and `CONFIG.md` agree with each other, that the plugin lists in `README.md` and `COMMANDS.md` match the `CONFIG.md` toggle tables, and that the `CONFIG.md` Plugin Dependencies table matches the `depend:` entries in the bundled JARs' `plugin.yml` files (read with `unzip`), and that the ports and container name set in `compose.yml` match those given in the documentation, and that every file `resources/post-create.sh` rewrites on each start is named in the "Modifying Server Files" section of `USER_GUIDE.md`. Run them after adding, renaming, or removing a plugin toggle or configuration variable, after replacing a JAR, after changing the Minecraft version, after changing a published port or the container name, and after adding or removing a file the entrypoint rewrites:
+Run the wiring tests, which check that:
+
+- `sample.env`, `compose.yml`, `resources/post-create.sh`, `resources/jars/`, the `Dockerfile` `--rev` argument, and `CONFIG.md` agree with each other;
+- the `Dockerfile` `ENTRYPOINT` uses the exec form;
+- the plugin lists in `README.md` and `COMMANDS.md` match the `CONFIG.md` toggle tables;
+- the `CONFIG.md` Plugin Dependencies table matches the `depend:` entries in the bundled JARs' `plugin.yml` files (read with `unzip`);
+- the ports and container name set in `compose.yml` match those given in the documentation;
+- every file `resources/post-create.sh` rewrites on each start is named in the "Modifying Server Files" section of `USER_GUIDE.md`.
+
+Run them after adding, renaming, or removing a plugin toggle or configuration variable, after replacing a JAR, after changing the Minecraft version, after changing a published port or the container name, and after adding or removing a file the entrypoint rewrites:
 
 ```
 ./tests/test-wiring.sh
