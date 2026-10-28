@@ -12,7 +12,9 @@
 # declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md.
 # The ports and container name set in compose.yml are repeated in USER_GUIDE.md
 # and in the documented docker logs/exec commands, and the files the entrypoint
-# rewrites on every start are listed in USER_GUIDE.md. Nothing else checks that
+# rewrites on every start are listed in USER_GUIDE.md. The plugin directories it
+# edits must be spelled as the bundled plugins name themselves in plugin.yml,
+# since Spigot creates each data directory from that name. Nothing else checks that
 # these agree, and a disagreement either builds cleanly and then fails at
 # startup or silently starts the server without a plugin. Nothing here runs
 # Docker.
