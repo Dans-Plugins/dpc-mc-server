@@ -69,7 +69,7 @@ manage_plugin_dependencies() {
 # Function: Update Bluemap configuration
 update_bluemap_config() {
     log "Updating Bluemap configuration..."
-    sed -i 's/accept-download: false/accept-download: true/g' "$SERVER_DIR"/plugins/bluemap/core.conf
+    sed -i 's/accept-download: false/accept-download: true/g' "$SERVER_DIR"/plugins/BlueMap/core.conf
 }
 
 # Function: Start server, replacing this shell so that java receives SIGTERM

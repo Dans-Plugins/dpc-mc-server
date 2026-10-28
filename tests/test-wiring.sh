@@ -12,7 +12,9 @@
 # declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md.
 # The ports and container name set in compose.yml are repeated in USER_GUIDE.md
 # and in the documented docker logs/exec commands, and the files the entrypoint
-# rewrites on every start are listed in USER_GUIDE.md. Nothing else checks that
+# rewrites on every start are listed in USER_GUIDE.md. The plugin directories it
+# edits must be spelled as the bundled plugins name themselves in plugin.yml,
+# since Spigot creates each data directory from that name. Nothing else checks that
 # these agree, and a disagreement either builds cleanly and then fails at
 # startup or silently starts the server without a plugin. Nothing here runs
 # Docker.
@@ -206,6 +208,14 @@ entrypoint_rewritten_paths() {
         /^\}/ { name = ""; next }
         name != "setup_server" && name != "start_server" && name != "manage_plugin_dependencies" { print }
     ' "$ENTRYPOINT" | grep -oE '"[$]SERVER_DIR"/[A-Za-z0-9_./-]+' | cut -d '/' -f 2- | grep -v '/$' | sort -u
+}
+
+# Function: Print the sorted plugin data directories that post-create.sh names
+# as "$SERVER_DIR"/plugins/<directory>/...
+entrypoint_plugin_directories() {
+    # The dollar sign is literal: the paths are matched as written in the script
+    # shellcheck disable=SC2016
+    grep -oE '"[$]SERVER_DIR"/plugins/[A-Za-z0-9_.-]+/' "$ENTRYPOINT" | cut -d '/' -f 3 | sort -u
 }
 
 # Function: Print the "### Modifying Server Files" section of USER_GUIDE.md
@@ -447,6 +457,38 @@ test_rewritten_files_are_documented() {
     fi
 }
 
+# Test: every plugin data directory the entrypoint edits is spelled exactly as a
+# bundled plugin names itself in plugin.yml. Spigot creates plugins/<name>/ from
+# that name, case-sensitively, so a directory spelled any other way never exists
+# and the edit fails on every start.
+test_plugin_directories_match_plugin_names() {
+    local names
+    local directories
+    local directory
+    local jar
+    local unmatched=""
+    if ! command -v unzip > /dev/null; then
+        report_fail "unzip is not installed, so the plugin.yml of each bundled JAR cannot be read"
+        return
+    fi
+    names="$(for jar in "$JARS_DIR"/*.jar; do plugin_name_and_requirements "$jar" | head -n 1; done)"
+    directories="$(entrypoint_plugin_directories)"
+    if [ -z "$directories" ]; then
+        report_fail "no plugin data directories found in post-create.sh"
+        return
+    fi
+    while read -r directory; do
+        if ! echo "$names" | grep -qxF -- "$directory"; then
+            unmatched="$unmatched $directory"
+        fi
+    done <<< "$directories"
+    if [ -z "$unmatched" ]; then
+        report_pass "every plugin directory post-create.sh edits matches a bundled plugin's name ($(echo "$directories" | paste -sd ' '))"
+    else
+        report_fail "plugin directories in post-create.sh that no bundled plugin.yml names (case-sensitive):$unmatched"
+    fi
+}
+
 # Main Process
 test_compose_variables_have_defaults
 test_sample_env_variables_reach_the_container
@@ -460,6 +502,7 @@ test_dependency_table_matches_plugin_metadata
 test_published_ports_are_documented
 test_documented_container_name_matches_compose
 test_rewritten_files_are_documented
+test_plugin_directories_match_plugin_names
 
 if [ "$failures" -eq 0 ]; then
     echo "WIRING TESTS: PASS"

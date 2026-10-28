@@ -64,7 +64,7 @@ This opens a Bash shell inside the container, not the Minecraft server console: 
 3. Run `exit` to leave the container.
 4. Run `docker compose restart` to apply the changes.
 
-The entrypoint script runs again on every restart and rewrites some files, so edits to these do not survive: `ops.json` is regenerated from the `OPERATOR_*` variables (see [CONFIG.md](CONFIG.md#operator_uuid)), `eula.txt` is rewritten, `plugins/MedievalFactions/lang` is deleted, every bundled plugin JAR is replaced or removed according to its toggle, and, while `BLUEMAP_ENABLED` is `true`, `accept-download: false` in `plugins/bluemap/core.conf` is set back to `true` (see [CONFIG.md](CONFIG.md#third-party-plugin-toggles)).
+The entrypoint script runs again on every restart and rewrites some files, so edits to these do not survive: `ops.json` is regenerated from the `OPERATOR_*` variables (see [CONFIG.md](CONFIG.md#operator_uuid)), `eula.txt` is rewritten, `plugins/MedievalFactions/lang` is deleted, every bundled plugin JAR is replaced or removed according to its toggle, and, while `BLUEMAP_ENABLED` is `true`, `accept-download: false` in `plugins/BlueMap/core.conf` is set back to `true` (see [CONFIG.md](CONFIG.md#third-party-plugin-toggles)).
 
 ### Adding Plugins to the Deposit Box
 

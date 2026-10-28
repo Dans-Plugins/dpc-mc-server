@@ -117,7 +117,7 @@ Any other value – including an empty value or a typo such as `ture` – is a f
 | `VIA_BACKWARDS_ENABLED` | `true` | [ViaBackwards](https://www.spigotmc.org/resources/viabackwards.27448/) |
 | `VIA_VERSION_ENABLED` | `true` | [ViaVersion](https://www.spigotmc.org/resources/viaversion.19254/) |
 
-When `BLUEMAP_ENABLED` is `true`, the entrypoint also sets `accept-download: true` in `plugins/bluemap/core.conf` on each start, accepting BlueMap's download of the Minecraft client resources on the operator's behalf. That file is created by BlueMap itself the first time the server loads it, after the entrypoint has already run, so on the first start with BlueMap enabled the edit fails with `No such file or directory` in the log and the setting takes effect from the next start.
+When `BLUEMAP_ENABLED` is `true`, the entrypoint also sets `accept-download: true` in `plugins/BlueMap/core.conf` on each start, accepting BlueMap's download of the Minecraft client resources on the operator's behalf. That file is created by BlueMap itself the first time the server loads it, after the entrypoint has already run, so on the first start with BlueMap enabled the edit fails with `No such file or directory` in the log and the setting takes effect from the next start.
 
 ---
 
