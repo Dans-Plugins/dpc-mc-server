@@ -73,7 +73,8 @@ Run the wiring tests, which check that:
 - the plugin lists in `README.md` and `COMMANDS.md` match the `CONFIG.md` toggle tables;
 - the `CONFIG.md` Plugin Dependencies table matches the `depend:` entries in the bundled JARs' `plugin.yml` files (read with `unzip`);
 - the ports and container name set in `compose.yml` match those given in the documentation;
-- every file `resources/post-create.sh` rewrites on each start is named in the "Modifying Server Files" section of `USER_GUIDE.md`.
+- every file `resources/post-create.sh` rewrites on each start is named in the "Modifying Server Files" section of `USER_GUIDE.md`;
+- every `plugins/<directory>/` that `resources/post-create.sh` edits is spelled exactly, case included, as a bundled JAR's `plugin.yml` `name:`.
 
 Run them after adding, renaming, or removing a plugin toggle or configuration variable, after replacing a JAR, after changing the Minecraft version, after changing a published port or the container name, and after adding or removing a file the entrypoint rewrites:
 
