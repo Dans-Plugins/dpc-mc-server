@@ -75,7 +75,7 @@ The three test scripts below run without Docker or network access, and the `test
 ./tests/test-post-create.sh
 ```
 
-The script exercises the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree, and checks with a stub `java` that `start_server` replaces the script's shell with the server process, without building an image or starting a server. It prints `POST-CREATE TESTS: PASS` and exits `0` when every assertion holds.
+The script exercises the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree, checks that every `*_ENABLED` toggle in `sample.env` is handed to `manage_plugin_dependencies` by a top-level call rather than one nested inside a conditional (which would leave its `false` and invalid-value branches unreachable) and that every toggle so handed has a default in `sample.env`, and checks with a stub `java` that `start_server` replaces the script's shell with the server process, without building an image or starting a server. It prints `POST-CREATE TESTS: PASS` and exits `0` when every assertion holds.
 
 ### Validating the Convenience Scripts
 
