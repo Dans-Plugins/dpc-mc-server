@@ -50,7 +50,7 @@ Issues are grouped into [milestones](https://github.com/Dans-Plugins/dpc-mc-serv
 
 ## Testing
 
-Run the entrypoint tests, which check the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree, that every `*_ENABLED` toggle in `sample.env` reaches `manage_plugin_dependencies` through a top-level call and has a default there, and that `start_server` replaces the script's shell with `java`:
+Run the entrypoint tests, which check the plugin-toggle handling in `resources/post-create.sh` against a throwaway directory tree, that every `*_ENABLED` toggle in `sample.env` reaches `manage_plugin_dependencies` through a top-level call and every toggle passed to it has a default in `sample.env`, and that `start_server` replaces the script's shell with `java`:
 
 ```
 ./tests/test-post-create.sh
