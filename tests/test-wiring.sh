@@ -4,9 +4,9 @@
 #
 # A configurable value lives in several files at once: its default in
 # sample.env, its pass-through in the compose.yml environment list, its
-# documentation in CONFIG.md (in sample.env order), and — for a plugin toggle — a JAR under
-# resources/jars/ whose name begins with the prefix given to
-# manage_plugin_dependencies. The Minecraft version is additionally repeated as
+# documentation in CONFIG.md (in sample.env order), and — for a plugin
+# toggle — a JAR under resources/jars/ whose name begins with the prefix given
+# to manage_plugin_dependencies. The Minecraft version is additionally repeated as
 # the Dockerfile's hardcoded BuildTools --rev argument, and every bundled plugin
 # is listed in README.md and COMMANDS.md as well, and the required dependencies
 # declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md.
