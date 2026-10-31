@@ -4,9 +4,9 @@
 #
 # A configurable value lives in several files at once: its default in
 # sample.env, its pass-through in the compose.yml environment list, its
-# documentation in CONFIG.md, and — for a plugin toggle — a JAR under
-# resources/jars/ whose name begins with the prefix given to
-# manage_plugin_dependencies. The Minecraft version is additionally repeated as
+# documentation in CONFIG.md (in sample.env order), and — for a plugin
+# toggle — a JAR under resources/jars/ whose name begins with the prefix given
+# to manage_plugin_dependencies. The Minecraft version is additionally repeated as
 # the Dockerfile's hardcoded BuildTools --rev argument, and every bundled plugin
 # is listed in README.md and COMMANDS.md as well, and the required dependencies
 # declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md.
@@ -70,6 +70,19 @@ documented_default() {
             print parts[2]
             exit
         }
+    ' "$CONFIG_DOC"
+}
+
+# Function: Print the sample.env variables that CONFIG.md documents, in the
+# order CONFIG.md documents them: each "## <VAR>" section heading and each
+# toggle-table row ("| `<VAR>` | `<default>` | [Plugin](...) |"). Rows of the
+# Plugin Dependencies table carry no link and are not counted.
+documented_variable_order() {
+    # The backticks are literal: they delimit the variable name in each table row
+    # shellcheck disable=SC2016
+    awk '
+        /^## [A-Z0-9_]+$/ { print $2; next }
+        /^\| `[A-Z0-9_]+` \| `[^`]*` \| \[/ { split($0, cells, "`"); print cells[2] }
     ' "$CONFIG_DOC"
 }
 
@@ -330,6 +343,21 @@ test_every_variable_is_documented_with_its_default() {
     fi
 }
 
+# Test: CONFIG.md documents the sample.env variables in the order sample.env
+# assigns them, as its introduction promises, so a reader comparing the two
+# files side by side finds each variable where they expect it
+test_variables_are_documented_in_sample_env_order() {
+    local expected
+    local documented
+    expected="$(sample_env_variables)"
+    documented="$(documented_variable_order)"
+    if [ -n "$expected" ] && [ "$documented" = "$expected" ]; then
+        report_pass "CONFIG.md documents the sample.env variables in sample.env order"
+    else
+        report_fail "CONFIG.md documents the variables in a different order from sample.env: $(paste -d ' ' <(echo "$expected") <(echo "$documented") | awk '$1 != $2 { printf "variable %d is %s in sample.env but %s in CONFIG.md", NR, ($1 == "" ? "absent" : $1), ($2 == "" ? "absent" : $2); exit }')"
+    fi
+}
+
 # Test: every plugin toggle in sample.env is handed to manage_plugin_dependencies
 # and every variable handed to it has a default in sample.env. A toggle with no
 # call is accepted and then ignored; a call with no default reads an empty value,
@@ -497,6 +525,7 @@ test_every_plugin_prefix_matches_one_jar
 test_minecraft_version_matches_build_revision
 test_entrypoint_uses_exec_form
 test_every_variable_is_documented_with_its_default
+test_variables_are_documented_in_sample_env_order
 test_plugin_lists_agree
 test_dependency_table_matches_plugin_metadata
 test_published_ports_are_documented

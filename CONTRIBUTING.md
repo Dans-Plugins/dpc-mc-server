@@ -69,6 +69,7 @@ A passing run ends with `SCRIPT TESTS: PASS` and exits `0`.
 Run the wiring tests, which check that:
 
 - `sample.env`, `compose.yml`, `resources/post-create.sh`, `resources/jars/`, the `Dockerfile` `--rev` argument, and `CONFIG.md` agree with each other;
+- `CONFIG.md` documents the `sample.env` variables in the order `sample.env` assigns them;
 - the `Dockerfile` `ENTRYPOINT` uses the exec form;
 - the plugin lists in `README.md` and `COMMANDS.md` match the `CONFIG.md` toggle tables;
 - the `CONFIG.md` Plugin Dependencies table matches the `depend:` entries in the bundled JARs' `plugin.yml` files (read with `unzip`);
