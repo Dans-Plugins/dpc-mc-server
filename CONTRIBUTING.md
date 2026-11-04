@@ -75,9 +75,11 @@ Run the wiring tests, which check that:
 - the `CONFIG.md` Plugin Dependencies table matches the `depend:` entries in the bundled JARs' `plugin.yml` files (read with `unzip`);
 - the ports and container name set in `compose.yml` match those given in the documentation;
 - every file `resources/post-create.sh` rewrites on each start is named in the "Modifying Server Files" section of `USER_GUIDE.md`;
-- every `plugins/<directory>/` that `resources/post-create.sh` edits is spelled exactly, case included, as a bundled JAR's `plugin.yml` `name:`.
+- every `plugins/<directory>/` that `resources/post-create.sh` edits is spelled exactly, case included, as a bundled JAR's `plugin.yml` `name:`;
+- the `SERVER_DIR`, `BUILD_DIR`, and `RESOURCES_DIR` paths in `resources/post-create.sh` match the `Dockerfile` `WORKDIR` and `COPY` lines and the `compose.yml` volume target;
+- the commands in `CONFIG.md` and `USER_GUIDE.md` that name paths inside the container use those directories, the `compose.yml` deposit-box mount, and the `compose.yml` service name.
 
-Run them after adding, renaming, or removing a plugin toggle or configuration variable, after replacing a JAR, after changing the Minecraft version, after changing a published port or the container name, and after adding or removing a file the entrypoint rewrites:
+Run them after adding, renaming, or removing a plugin toggle or configuration variable, after replacing a JAR, after changing the Minecraft version, after changing a published port, the container name, or a path inside the container, and after adding or removing a file the entrypoint rewrites:
 
 ```
 ./tests/test-wiring.sh

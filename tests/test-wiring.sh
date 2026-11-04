@@ -14,10 +14,11 @@
 # and in the documented docker logs/exec commands, and the files the entrypoint
 # rewrites on every start are listed in USER_GUIDE.md. The plugin directories it
 # edits must be spelled as the bundled plugins name themselves in plugin.yml,
-# since Spigot creates each data directory from that name. Nothing else checks that
-# these agree, and a disagreement either builds cleanly and then fails at
-# startup or silently starts the server without a plugin. Nothing here runs
-# Docker.
+# since Spigot creates each data directory from that name. The directories the
+# entrypoint works in are set by the Dockerfile and the compose.yml mounts, and
+# are repeated in the documented commands. Nothing else checks that these agree,
+# and a disagreement either builds cleanly and then fails at startup or silently
+# starts the server without a plugin. Nothing here runs Docker.
 #
 # Usage: ./tests/test-wiring.sh
 
@@ -238,6 +239,29 @@ modifying_server_files_section() {
         in_section && /^#/ { exit }
         in_section { print }
     ' "$USER_GUIDE"
+}
+
+# Function: Print the value that post-create.sh assigns to a top-level variable
+entrypoint_variable() {
+    grep -E "^$1=" "$ENTRYPOINT" | head -n 1 | cut -d '=' -f 2- | tr -d '"'
+}
+
+# Function: Print the container path that compose.yml mounts a source at
+compose_mount_target() {
+    awk -v wanted="$1" '
+        $1 == "source:" { matched = ($2 == wanted); next }
+        matched && $1 == "target:" { print $2; exit }
+    ' "$COMPOSE_FILE"
+}
+
+# Function: Print the name of the service that compose.yml defines
+compose_service_name() {
+    grep -A 1 -E '^services:' "$COMPOSE_FILE" | tail -n 1 | tr -d ' :'
+}
+
+# Function: Print the last WORKDIR in the Dockerfile lines read from stdin
+last_workdir() {
+    grep -E '^WORKDIR ' | tail -n 1 | awk '{print $2}'
 }
 
 # Test: every variable compose.yml interpolates has a default in sample.env, so
@@ -517,6 +541,84 @@ test_plugin_directories_match_plugin_names() {
     fi
 }
 
+# Test: SERVER_DIR is both the path the named volume is mounted at and the
+# image's final WORKDIR. Outside the mount the world is written to the container
+# layer and lost when the container is recreated. Spigot reads eula.txt and
+# plugins/ from its working directory, which start_server does not change, so
+# outside the WORKDIR the server ignores everything the entrypoint set up.
+test_server_directory_is_mounted_and_is_the_workdir() {
+    local server_dir
+    local mounted
+    local workdir
+    server_dir="$(entrypoint_variable SERVER_DIR)"
+    mounted="$(compose_mount_target dpcmcserver)"
+    workdir="$(last_workdir < "$DOCKERFILE")"
+    if [ -n "$server_dir" ] && [ "$server_dir" = "$mounted" ] && [ "$server_dir" = "$workdir" ]; then
+        report_pass "SERVER_DIR is the dpcmcserver volume target and the final WORKDIR ($server_dir)"
+    else
+        report_fail "SERVER_DIR is '$server_dir' but the dpcmcserver volume target is '$mounted' and the final WORKDIR is '$workdir'"
+    fi
+}
+
+# Test: BUILD_DIR is the WORKDIR that BuildTools runs in, since BuildTools writes
+# the Spigot JAR to its working directory and setup_server copies it from BUILD_DIR
+test_build_directory_is_the_buildtools_workdir() {
+    local build_dir
+    local workdir
+    build_dir="$(entrypoint_variable BUILD_DIR)"
+    workdir="$(sed '/BuildTools.jar --rev/q' "$DOCKERFILE" | last_workdir)"
+    if [ -n "$build_dir" ] && [ "$build_dir" = "$workdir" ]; then
+        report_pass "BUILD_DIR is the WORKDIR that BuildTools runs in ($build_dir)"
+    else
+        report_fail "BUILD_DIR is '$build_dir' but BuildTools runs in WORKDIR '$workdir'"
+    fi
+}
+
+# Test: RESOURCES_DIR is the jars directory of the path the Dockerfile copies
+# resources/ to, since every toggle set to "true" copies its JAR from there
+test_resources_directory_matches_the_copy_destination() {
+    local resources_dir
+    local copied_to
+    resources_dir="$(entrypoint_variable RESOURCES_DIR)"
+    copied_to="$(grep -E '^COPY [.]/resources ' "$DOCKERFILE" | awk '{print $3}')"
+    if [ -n "$copied_to" ] && [ "$resources_dir" = "$copied_to/jars" ]; then
+        report_pass "RESOURCES_DIR is the jars directory of the Dockerfile's resources copy ($resources_dir)"
+    else
+        report_fail "RESOURCES_DIR is '$resources_dir' but the Dockerfile copies resources/ to '$copied_to'"
+    fi
+}
+
+# Test: the commands in CONFIG.md and USER_GUIDE.md that name paths inside the
+# container use the directories the entrypoint and compose.yml actually use, and
+# the upgrade command in CONFIG.md names the compose.yml service
+test_documented_container_paths_match() {
+    local server_dir
+    local build_dir
+    local deposit_dir
+    local service
+    local missing=""
+    local doc
+    local command
+    server_dir="$(entrypoint_variable SERVER_DIR)"
+    build_dir="$(entrypoint_variable BUILD_DIR)"
+    deposit_dir="$(compose_mount_target ./deposit-box)"
+    service="$(compose_service_name)"
+    while IFS='|' read -r doc command; do
+        if ! grep -qF -- "$command" "$REPO_ROOT/$doc"; then
+            missing="$missing [$doc: $command]"
+        fi
+    done <<EOF
+CONFIG.md|docker compose run --rm --entrypoint cp $service $build_dir/spigot-<MINECRAFT_VERSION>.jar $server_dir/
+USER_GUIDE.md|Navigate to \`$server_dir\`
+USER_GUIDE.md|cp $deposit_dir/YourPlugin.jar $server_dir/plugins/
+EOF
+    if [ -n "$server_dir" ] && [ -n "$build_dir" ] && [ -n "$deposit_dir" ] && [ -n "$service" ] && [ -z "$missing" ]; then
+        report_pass "the commands in CONFIG.md and USER_GUIDE.md use the service and container paths in force ($service $server_dir $build_dir $deposit_dir)"
+    else
+        report_fail "documentation does not contain the expected service and container paths:$missing"
+    fi
+}
+
 # Main Process
 test_compose_variables_have_defaults
 test_sample_env_variables_reach_the_container
@@ -532,6 +634,10 @@ test_published_ports_are_documented
 test_documented_container_name_matches_compose
 test_rewritten_files_are_documented
 test_plugin_directories_match_plugin_names
+test_server_directory_is_mounted_and_is_the_workdir
+test_build_directory_is_the_buildtools_workdir
+test_resources_directory_matches_the_copy_destination
+test_documented_container_paths_match
 
 if [ "$failures" -eq 0 ]; then
     echo "WIRING TESTS: PASS"
