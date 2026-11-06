@@ -77,9 +77,10 @@ Run the wiring tests, which check that:
 - every file `resources/post-create.sh` rewrites on each start is named in the "Modifying Server Files" section of `USER_GUIDE.md`;
 - every `plugins/<directory>/` that `resources/post-create.sh` edits is spelled exactly, case included, as a bundled JAR's `plugin.yml` `name:`;
 - the `SERVER_DIR`, `BUILD_DIR`, and `RESOURCES_DIR` paths in `resources/post-create.sh` match the `Dockerfile` `WORKDIR` and `COPY` lines and the `compose.yml` volume target;
-- the commands in `CONFIG.md` and `USER_GUIDE.md` that name paths inside the container use those directories, the `compose.yml` deposit-box mount, and the `compose.yml` service name.
+- the commands in `CONFIG.md` and `USER_GUIDE.md` that name paths inside the container use those directories, the `compose.yml` deposit-box mount, and the `compose.yml` service name;
+- every script under `tests/` is run by the `test` job of `.github/workflows/build.yml` and appears as a command in the Testing sections of `README.md` and this file.
 
-Run them after adding, renaming, or removing a plugin toggle or configuration variable, after replacing a JAR, after changing the Minecraft version, after changing a published port, the container name, or a path inside the container, and after adding or removing a file the entrypoint rewrites:
+Run them after adding, renaming, or removing a plugin toggle or configuration variable, after replacing a JAR, after changing the Minecraft version, after changing a published port, the container name, or a path inside the container, after adding or removing a file the entrypoint rewrites, and after adding a test script:
 
 ```
 ./tests/test-wiring.sh
@@ -87,7 +88,7 @@ Run them after adding, renaming, or removing a plugin toggle or configuration va
 
 A passing run ends with `WIRING TESTS: PASS` and exits `0`.
 
-The `test` job of the `Build` workflow runs all three scripts on every pull request, so a failure in any of them fails the pull request's checks. Running them locally first gives the same result in under a second.
+The `test` job of the `Build` workflow runs all of these scripts on every pull request, so a failure in any of them fails the pull request's checks. Running them locally first gives the same result in under a second.
 
 Validate the Docker image builds successfully:
 

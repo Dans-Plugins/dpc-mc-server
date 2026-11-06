@@ -18,7 +18,9 @@
 # entrypoint works in are set by the Dockerfile and the compose.yml mounts, and
 # are repeated in the documented commands. Nothing else checks that these agree,
 # and a disagreement either builds cleanly and then fails at startup or silently
-# starts the server without a plugin. Nothing here runs Docker.
+# starts the server without a plugin. Each script under tests/ must also be run
+# by the workflow's test job and documented, or nothing ever runs it. Nothing
+# here runs Docker.
 #
 # Usage: ./tests/test-wiring.sh
 
@@ -30,6 +32,7 @@ JARS_DIR="$REPO_ROOT/resources/jars"
 DOCKERFILE="$REPO_ROOT/Dockerfile"
 CONFIG_DOC="$REPO_ROOT/CONFIG.md"
 USER_GUIDE="$REPO_ROOT/USER_GUIDE.md"
+WORKFLOW="$REPO_ROOT/.github/workflows/build.yml"
 
 failures=0
 
@@ -262,6 +265,24 @@ compose_service_name() {
 # Function: Print the last WORKDIR in the Dockerfile lines read from stdin
 last_workdir() {
     grep -E '^WORKDIR ' | tail -n 1 | awk '{print $2}'
+}
+
+# Function: Print the commands of the run: steps in the workflow's test job
+workflow_test_job_commands() {
+    awk '
+        /^  test:/ { in_job = 1; next }
+        in_job && /^  [a-z]/ { exit }
+        in_job && /^ +(- )?run: / { sub(/^ +(- )?run: /, ""); print }
+    ' "$WORKFLOW"
+}
+
+# Function: Print the "## Testing" section of a document
+testing_section() {
+    awk '
+        $0 == "## Testing" { in_section = 1; next }
+        in_section && /^## / { exit }
+        in_section { print }
+    ' "$1"
 }
 
 # Test: every variable compose.yml interpolates has a default in sample.env, so
@@ -619,6 +640,43 @@ EOF
     fi
 }
 
+# Test: every script under tests/ is run by the workflow's test job and appears
+# as a command in the Testing sections of README.md and CONTRIBUTING.md. Both
+# documents say the job runs all of them, and a script left out of the workflow
+# would otherwise pass every check without ever being run.
+test_every_test_script_is_run_and_documented() {
+    local commands
+    local readme_section
+    local contributing_section
+    local script
+    local name
+    local missing=""
+    commands="$(workflow_test_job_commands)"
+    readme_section="$(testing_section "$REPO_ROOT/README.md")"
+    contributing_section="$(testing_section "$REPO_ROOT/CONTRIBUTING.md")"
+    if [ -z "$commands" ] || [ -z "$readme_section" ] || [ -z "$contributing_section" ]; then
+        report_fail "no run: steps in the test job of build.yml, or no '## Testing' section in README.md or CONTRIBUTING.md"
+        return
+    fi
+    for script in "$REPO_ROOT"/tests/*.sh; do
+        name="tests/$(basename "$script")"
+        if ! echo "$commands" | grep -qF -- "$name"; then
+            missing="$missing [$name: not run by the test job of build.yml]"
+        fi
+        if ! echo "$readme_section" | grep -qxF -- "./$name"; then
+            missing="$missing [$name: not in the Testing section of README.md]"
+        fi
+        if ! echo "$contributing_section" | grep -qxF -- "./$name"; then
+            missing="$missing [$name: not in the Testing section of CONTRIBUTING.md]"
+        fi
+    done
+    if [ -z "$missing" ]; then
+        report_pass "every script under tests/ is run by the test job and documented in README.md and CONTRIBUTING.md"
+    else
+        report_fail "test scripts not wired in:$missing"
+    fi
+}
+
 # Main Process
 test_compose_variables_have_defaults
 test_sample_env_variables_reach_the_container
@@ -638,6 +696,7 @@ test_server_directory_is_mounted_and_is_the_workdir
 test_build_directory_is_the_buildtools_workdir
 test_resources_directory_matches_the_copy_destination
 test_documented_container_paths_match
+test_every_test_script_is_run_and_documented
 
 if [ "$failures" -eq 0 ]; then
     echo "WIRING TESTS: PASS"
