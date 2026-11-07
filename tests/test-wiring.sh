@@ -9,8 +9,9 @@
 # to manage_plugin_dependencies. The Minecraft version is additionally repeated as
 # the Dockerfile's hardcoded BuildTools --rev argument, and every bundled plugin
 # is listed in README.md and COMMANDS.md as well, and the required dependencies
-# declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md.
-# The ports and container name set in compose.yml are repeated in USER_GUIDE.md
+# declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md, must
+# all be bundled, and must be enabled by the sample.env defaults for every plugin
+# those defaults enable. The ports and container name set in compose.yml are repeated in USER_GUIDE.md
 # and in the documented docker logs/exec commands, and the files the entrypoint
 # rewrites on every start are listed in USER_GUIDE.md. The plugin directories it
 # edits must be spelled as the bundled plugins name themselves in plugin.yml,
@@ -144,6 +145,14 @@ plugin_name_and_requirements() {
             for (i = 1; i <= count; i++) print required[i]
         }
     '
+}
+
+# Function: Print the name each bundled JAR gives its plugin in plugin.yml
+bundled_plugin_names() {
+    local jar
+    for jar in "$JARS_DIR"/*.jar; do
+        plugin_name_and_requirements "$jar" | head -n 1
+    done
 }
 
 # Function: Print the sorted dependency-table rows that the bundled JARs imply:
@@ -467,6 +476,66 @@ test_dependency_table_matches_plugin_metadata() {
     fi
 }
 
+# Test: every plugin that a bundled JAR requires is itself bundled. Spigot refuses
+# to load a plugin whose "depend:" entry is missing, and the dependency table only
+# has rows for requirements with a toggle, so it cannot show an unbundled one.
+test_required_plugins_are_bundled() {
+    local names
+    local jar
+    local plugin
+    local required
+    local unbundled=""
+    if ! command -v unzip > /dev/null; then
+        report_fail "unzip is not installed, so the plugin.yml of each bundled JAR cannot be read"
+        return
+    fi
+    names="$(bundled_plugin_names)"
+    for jar in "$JARS_DIR"/*.jar; do
+        plugin="$(plugin_name_and_requirements "$jar" | head -n 1)"
+        while read -r required; do
+            if ! echo "$names" | grep -qxF -- "$required"; then
+                unbundled="$unbundled $plugin(requires $required)"
+            fi
+        done < <(plugin_name_and_requirements "$jar" | tail -n +2)
+    done
+    if [ -z "$unbundled" ]; then
+        report_pass "every plugin required by a bundled JAR is itself bundled"
+    else
+        report_fail "bundled plugins that Spigot cannot load, because a depend: entry names no bundled plugin (case-sensitive):$unbundled"
+    fi
+}
+
+# Test: the sample.env defaults never enable a plugin while disabling one it
+# requires. The entrypoint applies the toggles independently, so a stock server
+# would start and Spigot would leave the dependent plugin unloaded.
+test_default_toggles_satisfy_dependencies() {
+    local pairs
+    local var
+    local required_var
+    local unsatisfied=""
+    if ! command -v unzip > /dev/null; then
+        report_fail "unzip is not installed, so the plugin.yml of each bundled JAR cannot be read"
+        return
+    fi
+    # The backticks are literal: they delimit the variable names in each table row
+    # shellcheck disable=SC2016
+    pairs="$(required_dependency_rows | tr -d '|`')"
+    if [ -z "$pairs" ]; then
+        report_fail "no required dependencies found between the bundled JARs"
+        return
+    fi
+    while read -r var required_var; do
+        if [ "$(sample_env_value "$var")" = "true" ] && [ "$(sample_env_value "$required_var")" != "true" ]; then
+            unsatisfied="$unsatisfied $var(requires $required_var)"
+        fi
+    done <<< "$pairs"
+    if [ -z "$unsatisfied" ]; then
+        report_pass "the sample.env defaults enable every plugin that an enabled plugin requires"
+    else
+        report_fail "sample.env enables plugins whose required plugin it disables:$unsatisfied"
+    fi
+}
+
 # Test: the ports USER_GUIDE.md tells users to free on their host are exactly
 # the host ports compose.yml publishes, so a port added, removed, or remapped in
 # compose.yml cannot leave the prerequisites describing a different set
@@ -538,13 +607,12 @@ test_plugin_directories_match_plugin_names() {
     local names
     local directories
     local directory
-    local jar
     local unmatched=""
     if ! command -v unzip > /dev/null; then
         report_fail "unzip is not installed, so the plugin.yml of each bundled JAR cannot be read"
         return
     fi
-    names="$(for jar in "$JARS_DIR"/*.jar; do plugin_name_and_requirements "$jar" | head -n 1; done)"
+    names="$(bundled_plugin_names)"
     directories="$(entrypoint_plugin_directories)"
     if [ -z "$directories" ]; then
         report_fail "no plugin data directories found in post-create.sh"
@@ -688,6 +756,8 @@ test_every_variable_is_documented_with_its_default
 test_variables_are_documented_in_sample_env_order
 test_plugin_lists_agree
 test_dependency_table_matches_plugin_metadata
+test_required_plugins_are_bundled
+test_default_toggles_satisfy_dependencies
 test_published_ports_are_documented
 test_documented_container_name_matches_compose
 test_rewritten_files_are_documented
