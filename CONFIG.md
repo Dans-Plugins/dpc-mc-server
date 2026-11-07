@@ -131,7 +131,7 @@ The toggles are applied independently: the entrypoint does not check whether a p
 | `FIEFS_ENABLED` | `MEDIEVAL_FACTIONS_ENABLED` |
 | `VIA_BACKWARDS_ENABLED` | `VIA_VERSION_ENABLED` |
 
-`tests/test-wiring.sh` fails if this table and the `depend:` entries in the bundled JARs disagree, so replacing a JAR that gains or loses a requirement also requires updating the table.
+`tests/test-wiring.sh` fails if this table and the `depend:` entries in the bundled JARs disagree, so replacing a JAR that gains or loses a requirement also requires updating the table. It also fails if a `depend:` entry names a plugin that is not bundled, and if the `sample.env` defaults enable a plugin in the table while disabling the plugin it requires. Neither check looks at your `.env`.
 
 If the required plugin is disabled, the dependent plugin's JAR is still copied into `plugins/`, but Spigot refuses to load it and logs an unknown-dependency error at startup. The server itself still starts. Disable the dependent plugin as well, or keep the required one enabled.
 
