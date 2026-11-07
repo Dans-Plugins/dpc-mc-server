@@ -11,11 +11,11 @@
 # is listed in README.md and COMMANDS.md as well, and the required dependencies
 # declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md, must
 # all be bundled, and must be enabled by the sample.env defaults for every plugin
-# those defaults enable. The ports and container name set in compose.yml are repeated in USER_GUIDE.md
-# and in the documented docker logs/exec commands, and the files the entrypoint
-# rewrites on every start are listed in USER_GUIDE.md. The plugin directories it
-# edits must be spelled as the bundled plugins name themselves in plugin.yml,
-# since Spigot creates each data directory from that name. The directories the
+# those defaults enable. The ports and container name set in compose.yml are
+# repeated in USER_GUIDE.md and in the documented docker logs/exec commands, and
+# the files the entrypoint rewrites on every start are listed in USER_GUIDE.md.
+# The plugin directories it edits must be spelled as the bundled plugins name
+# themselves in plugin.yml, since Spigot creates each data directory from that name. The directories the
 # entrypoint works in are set by the Dockerfile and the compose.yml mounts, and
 # are repeated in the documented commands. Nothing else checks that these agree,
 # and a disagreement either builds cleanly and then fails at startup or silently
