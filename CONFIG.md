@@ -135,4 +135,17 @@ The toggles are applied independently: the entrypoint does not check whether a p
 
 If the required plugin is disabled, the dependent plugin's JAR is still copied into `plugins/`, but Spigot refuses to load it and logs an unknown-dependency error at startup. The server itself still starts. Disable the dependent plugin as well, or keep the required one enabled.
 
-Two further bundled plugins declare optional integrations (`softdepend:`) with other bundled plugins. These are not requirements, and both plugins load with the integrations disabled: Medieval-Factions with Dynmap, PlaceholderAPI, and Mailboxes; Medieval-Roleplay-Engine with PlaceholderAPI, Medieval-Factions, and Mailboxes.
+### Optional Integrations
+
+Two further bundled plugins declare optional integrations (`softdepend:` in their `plugin.yml`) with other bundled plugins. These are not requirements: each plugin loads when the plugin it integrates with is disabled, with that integration turned off.
+
+| Toggle | Integrates with |
+|--------|-----------------|
+| `MEDIEVAL_FACTIONS_ENABLED` | `DYNMAP_ENABLED` |
+| `MEDIEVAL_FACTIONS_ENABLED` | `MAILBOXES_ENABLED` |
+| `MEDIEVAL_FACTIONS_ENABLED` | `PLACEHOLDER_API_ENABLED` |
+| `MEDIEVAL_ROLEPLAY_ENGINE_ENABLED` | `MAILBOXES_ENABLED` |
+| `MEDIEVAL_ROLEPLAY_ENGINE_ENABLED` | `MEDIEVAL_FACTIONS_ENABLED` |
+| `MEDIEVAL_ROLEPLAY_ENGINE_ENABLED` | `PLACEHOLDER_API_ENABLED` |
+
+`tests/test-wiring.sh` fails if this table and the `softdepend:` entries in the bundled JARs disagree. Entries naming a plugin that is not bundled, such as Medieval-Factions' `Multiverse-Core`, are left out of the table and do not fail the check.
