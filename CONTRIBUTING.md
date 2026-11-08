@@ -72,7 +72,7 @@ Run the wiring tests, which check that:
 - `CONFIG.md` documents the `sample.env` variables in the order `sample.env` assigns them;
 - the `Dockerfile` `ENTRYPOINT` uses the exec form;
 - the plugin lists in `README.md` and `COMMANDS.md` match the `CONFIG.md` toggle tables;
-- the `CONFIG.md` Plugin Dependencies table matches the `depend:` entries in the bundled JARs' `plugin.yml` files (read with `unzip`);
+- the `CONFIG.md` Plugin Dependencies table matches the `depend:` entries in the bundled JARs' `plugin.yml` files (read with `unzip`), and its Optional Integrations table matches their `softdepend:` entries on other bundled plugins;
 - every plugin named in a `depend:` entry is itself bundled, and the `sample.env` defaults never enable a plugin while disabling one it requires;
 - the ports and container name set in `compose.yml` match those given in the documentation;
 - every file `resources/post-create.sh` rewrites on each start is named in the "Modifying Server Files" section of `USER_GUIDE.md`;

@@ -9,7 +9,8 @@
 # to manage_plugin_dependencies. The Minecraft version is additionally repeated as
 # the Dockerfile's hardcoded BuildTools --rev argument, and every bundled plugin
 # is listed in README.md and COMMANDS.md as well, and the required dependencies
-# declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md, must
+# declared in the bundled JARs' plugin.yml files are tabulated in CONFIG.md (as
+# are the optional integrations they declare on each other), must
 # all be bundled, and must be enabled by the sample.env defaults for every plugin
 # those defaults enable. The ports and container name set in compose.yml are
 # repeated in USER_GUIDE.md and in the documented docker logs/exec commands, and
@@ -122,29 +123,35 @@ jar_for_prefix() {
 }
 
 # Function: Print the plugin name from a JAR's plugin.yml on the first line,
-# then each plugin named in its required "depend:" list on a line of its own.
-# Both the inline ("depend: [A, B]") and block ("- A") list forms are read.
-plugin_name_and_requirements() {
-    unzip -p "$1" plugin.yml | tr -d "\r\"'" | awk '
+# then each plugin named in one of its top-level lists (such as "depend" or
+# "softdepend") on a line of its own. Both the inline ("depend: [A, B]") and
+# block ("- A") list forms are read.
+plugin_name_and_list() {
+    unzip -p "$1" plugin.yml | tr -d "\r\"'" | awk -v key="$2" '
         /^name:/ { name = $0; sub(/^name:[ \t]*/, "", name); sub(/[ \t]+$/, "", name) }
-        /^depend:/ {
-            in_depend = 1
-            line = $0
-            sub(/^depend:/, "", line)
+        index($0, key ":") == 1 {
+            in_list = 1
+            line = substr($0, length(key) + 2)
             gsub(/\[/, " ", line)
             gsub(/\]/, " ", line)
             gsub(/,/, " ", line)
-            requirements = requirements " " line
+            entries = entries " " line
             next
         }
-        in_depend && /^[ \t]*- / { line = $0; sub(/^[ \t]*- /, "", line); requirements = requirements " " line; next }
-        { in_depend = 0 }
+        in_list && /^[ \t]*- / { line = $0; sub(/^[ \t]*- /, "", line); entries = entries " " line; next }
+        { in_list = 0 }
         END {
             print name
-            count = split(requirements, required, " ")
-            for (i = 1; i <= count; i++) print required[i]
+            count = split(entries, listed, " ")
+            for (i = 1; i <= count; i++) print listed[i]
         }
     '
+}
+
+# Function: Print the plugin name from a JAR's plugin.yml on the first line,
+# then each plugin named in its required "depend:" list on a line of its own
+plugin_name_and_requirements() {
+    plugin_name_and_list "$1" depend
 }
 
 # Function: Print the name each bundled JAR gives its plugin in plugin.yml
@@ -159,6 +166,22 @@ bundled_plugin_names() {
 # one "| `<toggle>` | `<required toggle>` |" row for every required dependency
 # of a bundled plugin on another bundled plugin
 required_dependency_rows() {
+    toggle_rows_for_list depend
+}
+
+# Function: Print the sorted integration-table rows that the bundled JARs imply:
+# one "| `<toggle>` | `<optional toggle>` |" row for every optional dependency
+# of a bundled plugin on another bundled plugin. Entries naming a plugin that
+# is not bundled are left out, since Spigot loads the plugin without them.
+optional_dependency_rows() {
+    toggle_rows_for_list softdepend
+}
+
+# Function: Print the sorted "| `<toggle>` | `<toggle>` |" rows that one
+# plugin.yml list (such as "depend" or "softdepend") implies between bundled
+# plugins, mapping each plugin name back to its toggle
+toggle_rows_for_list() {
+    local key="$1"
     local plugins
     local prefix
     local var
@@ -181,19 +204,31 @@ required_dependency_rows() {
             if [ -n "$required_var" ]; then
                 echo "| \`$var\` | \`$required_var\` |"
             fi
-        done < <(plugin_name_and_requirements "$jar" | tail -n +2)
+        done < <(plugin_name_and_list "$jar" "$key" | tail -n +2)
     done < <(plugin_calls) | sort
 }
 
-# Function: Print the sorted rows of the CONFIG.md "## Plugin Dependencies" table
-documented_dependency_rows() {
+# Function: Print the sorted two-toggle table rows between a CONFIG.md heading
+# line and the next heading of any level
+toggle_pair_rows_under() {
     # The backticks are literal: they delimit the variable names in each table row
     # shellcheck disable=SC2016
-    awk '
-        $0 == "## Plugin Dependencies" { in_section = 1; next }
-        in_section && /^## / { exit }
+    awk -v heading="$1" '
+        $0 == heading { in_section = 1; next }
+        in_section && /^#/ { exit }
         in_section { print }
     ' "$CONFIG_DOC" | grep -E '^\| `[A-Z0-9_]+_ENABLED` \| `[A-Z0-9_]+_ENABLED` \|$' | sort
+}
+
+# Function: Print the sorted rows of the CONFIG.md "## Plugin Dependencies"
+# table, which ends at the "### Optional Integrations" subsection
+documented_dependency_rows() {
+    toggle_pair_rows_under "## Plugin Dependencies"
+}
+
+# Function: Print the sorted rows of the CONFIG.md "### Optional Integrations" table
+documented_integration_rows() {
+    toggle_pair_rows_under "### Optional Integrations"
 }
 
 # Function: Print the sorted host ports that the compose.yml ports list publishes
@@ -473,6 +508,26 @@ test_dependency_table_matches_plugin_metadata() {
         report_pass "the CONFIG.md dependency table matches the depend: entries of the bundled JARs"
     else
         report_fail "the CONFIG.md dependency table and the bundled JARs disagree (rows found in only one of them): $(comm -3 <(echo "$documented") <(echo "$expected") | tr -d '\t' | tr '\n' ' ')"
+    fi
+}
+
+# Test: the CONFIG.md "Optional Integrations" table lists exactly the optional
+# dependencies ("softdepend:") that the bundled JARs declare on each other. A
+# replaced JAR can gain or lose one with no reviewable diff. Entries naming a
+# plugin that is not bundled do not belong in the table and do not fail.
+test_integration_table_matches_plugin_metadata() {
+    local expected
+    local documented
+    if ! command -v unzip > /dev/null; then
+        report_fail "unzip is not installed, so the plugin.yml of each bundled JAR cannot be read"
+        return
+    fi
+    expected="$(optional_dependency_rows)"
+    documented="$(documented_integration_rows)"
+    if [ "$documented" = "$expected" ]; then
+        report_pass "the CONFIG.md optional integrations table matches the softdepend: entries of the bundled JARs"
+    else
+        report_fail "the CONFIG.md optional integrations table and the bundled JARs disagree (rows found in only one of them): $(comm -3 <(echo "$documented") <(echo "$expected") | tr -d '\t' | tr '\n' ' ')"
     fi
 }
 
@@ -756,6 +811,7 @@ test_every_variable_is_documented_with_its_default
 test_variables_are_documented_in_sample_env_order
 test_plugin_lists_agree
 test_dependency_table_matches_plugin_metadata
+test_integration_table_matches_plugin_metadata
 test_required_plugins_are_bundled
 test_default_toggles_satisfy_dependencies
 test_published_ports_are_documented
