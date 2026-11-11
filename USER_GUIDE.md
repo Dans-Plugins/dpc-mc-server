@@ -91,6 +91,21 @@ Disabling Medieval-Factions leaves Currencies and Fiefs unable to load, and disa
 
 `docker compose restart` is not sufficient here. The toggles reach the entrypoint script through the container's environment, which is fixed when the container is created, so a restarted container still sees the old values.
 
+### Updating to a Newer Version
+
+To pick up a newer version of this repository, such as updated plugin JARs, pull the changes and recreate the container:
+
+```
+git pull
+./up.sh
+```
+
+`./up.sh` rebuilds the image and recreates the container. On start, the entrypoint replaces the JAR of every enabled bundled plugin in `plugins/` with the version from the new image. The world and the rest of the server data in the `dpcmcserver` volume are kept. A plugin that the update stops bundling altogether is not removed: with no toggle left for it, the entrypoint no longer touches its JAR, which stays in `plugins/` until it is deleted by hand.
+
+`git pull` updates `sample.env` but never `.env`, which is not tracked. Before running `./up.sh`, compare the two files and copy into `.env` any variable that `sample.env` now defines and `.env` does not. A variable missing from `.env` reaches the container as an empty value: Compose warns that the variable is not set and substitutes a blank string. For a plugin toggle, the entrypoint then rejects the empty value and stops the container before the server starts, as described under [Enabling or Disabling a Plugin](#enabling-or-disabling-a-plugin).
+
+If the update changed `MINECRAFT_VERSION` in `sample.env`, change it in `.env` as well and follow the upgrade steps under [MINECRAFT_VERSION](CONFIG.md#minecraft_version), because a version change does not update an existing server directory. While `.env` keeps the old value, an existing server goes on launching the old Spigot JAR that is still in its directory.
+
 ### Resetting the Server
 
 Set `OVERWRITE_EXISTING_SERVER=true` in `.env` and run `./up.sh`. **This deletes all existing server data.** Set the variable back to `false` afterwards and run `./up.sh` again to prevent accidental data loss.

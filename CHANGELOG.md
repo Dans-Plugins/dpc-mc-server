@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Brought the Testing section of `CONTRIBUTING.md` in line with the test scripts. It now mentions the `bash -n` check in `tests/test-scripts.sh` and the `ENTRYPOINT` exec-form check in `tests/test-wiring.sh`, and lists what the wiring tests check as bullets rather than one long sentence.
 - The Testing sections of `README.md` and `CONTRIBUTING.md` now describe every check in `tests/test-post-create.sh`. They omitted its two static checks: every `*_ENABLED` toggle in `sample.env` reaches `manage_plugin_dependencies` through a top-level call, and every toggle passed to it has a default in `sample.env`.
 - Corrected the `docker build` success message in `README.md`. `Successfully built` is printed only by the legacy builder; BuildKit, which current Docker releases use by default, prints a `naming to` step instead.
+- Documented in `USER_GUIDE.md` how to update an existing server to a newer version of this repository: `git pull` followed by `./up.sh`. `git pull` does not touch the untracked `.env`, so a variable newly added to `sample.env` reaches the container empty. For a plugin toggle, that stops the container before the server starts. A `MINECRAFT_VERSION` change also has to be copied into `.env`. Previously no document described updating at all.
 
 ### Fixed
 
