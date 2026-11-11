@@ -100,7 +100,7 @@ git pull
 ./up.sh
 ```
 
-`./up.sh` rebuilds the image and recreates the container. On start, the entrypoint replaces the JAR of every enabled bundled plugin in `plugins/` with the version from the new image. The world and the rest of the server data in the `dpcmcserver` volume are kept.
+`./up.sh` rebuilds the image and recreates the container. On start, the entrypoint replaces the JAR of every enabled bundled plugin in `plugins/` with the version from the new image. The world and the rest of the server data in the `dpcmcserver` volume are kept. A plugin that the update stops bundling altogether is not removed: with no toggle left for it, the entrypoint no longer touches its JAR, which stays in `plugins/` until it is deleted by hand.
 
 `git pull` updates `sample.env` but never `.env`, which is not tracked. Before running `./up.sh`, compare the two files and copy into `.env` any variable that `sample.env` now defines and `.env` does not. A variable missing from `.env` reaches the container as an empty value: Compose warns that the variable is not set and substitutes a blank string. For a plugin toggle, the entrypoint then rejects the empty value and stops the container before the server starts, as described under [Enabling or Disabling a Plugin](#enabling-or-disabling-a-plugin).
 
