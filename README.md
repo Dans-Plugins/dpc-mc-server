@@ -15,6 +15,8 @@ DPC MC Server is an infrastructure-as-code Minecraft server for the Dan's Plugin
 5. Copy `sample.env` to `.env` and configure as needed (see [Configuration Guide](CONFIG.md)).
 6. Start the server: `./up.sh`
 
+The first run compiles Spigot from source and takes several minutes. Starting the server also accepts the [Minecraft EULA](https://aka.ms/MinecraftEULA) on your behalf. See [First Steps](USER_GUIDE.md#first-steps) in the User Guide for both.
+
 ### Included Plugins
 
 The server ships with the following DPC plugins (each can be toggled on or off via `.env`):
