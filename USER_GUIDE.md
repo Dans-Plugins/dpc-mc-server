@@ -9,6 +9,8 @@
 
 ## First Steps
 
+Starting the server accepts the [Minecraft End User License Agreement](https://aka.ms/MinecraftEULA) on your behalf. The entrypoint script writes `eula=true` to `eula.txt` on every start, and no variable turns this off. Read the EULA before running `./up.sh` for the first time.
+
 1. Clone the repository:
    ```
    git clone https://github.com/Dans-Plugins/dpc-mc-server.git
@@ -26,8 +28,6 @@
    The first run builds the image, which downloads BuildTools from `hub.spigotmc.org` and compiles Spigot from source. This needs network access and takes several minutes. Later runs reuse Docker's layer cache and skip the compile unless the `Dockerfile` has changed.
 5. Wait for the server to finish starting. `./up.sh` returns as soon as the container is running, before the world has loaded. Follow the log with `docker logs -f dpc-mc-server` until Spigot prints a line beginning `Done (`, then press `Ctrl+C` to stop following it. The server keeps running.
 6. Connect to the server in Minecraft at `localhost:25565`.
-
-Starting the server accepts the [Minecraft End User License Agreement](https://aka.ms/MinecraftEULA) on your behalf. The entrypoint script writes `eula=true` to `eula.txt` on every start, and no variable turns this off. Read the EULA before running `./up.sh` for the first time.
 
 ## Common Scenarios
 
