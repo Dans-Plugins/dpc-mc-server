@@ -65,7 +65,6 @@ Please fill out a bug report [here](https://github.com/Dans-Plugins/dpc-mc-serve
 ## Contributing
 
 - [CONTRIBUTING.md](CONTRIBUTING.md)
-- [Notes for Developers](https://github.com/Dans-Plugins/dpc-mc-server/wiki)
 
 ## Testing
 
