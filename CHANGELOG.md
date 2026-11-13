@@ -39,6 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Corrected the `docker build` success message in `README.md`. `Successfully built` is printed only by the legacy builder; BuildKit, which current Docker releases use by default, prints a `naming to` step instead.
 - Documented in `USER_GUIDE.md` how to update an existing server to a newer version of this repository: `git pull` followed by `./up.sh`. `git pull` does not touch the untracked `.env`, so a variable newly added to `sample.env` reaches the container empty. For a plugin toggle, that stops the container before the server starts. A `MINECRAFT_VERSION` change also has to be copied into `.env`. Previously no document described updating at all.
 - Documented in `USER_GUIDE.md` and `README.md` that starting the server accepts the Minecraft EULA on the user's behalf. The entrypoint writes `eula=true` to `eula.txt` on every start and has no setting to turn this off, but no document said so. The First Steps in `USER_GUIDE.md` now also say that the first `./up.sh` downloads BuildTools and compiles Spigot, which needs network access and takes several minutes, and that the server is ready once its log prints a line beginning `Done (`, since `./up.sh` returns before the world has loaded.
+- Removed the "Notes for Developers" link from the Contributing section of `README.md`. It pointed at the repository wiki, which has no pages. `CONTRIBUTING.md` remains the developer guide.
 
 ### Fixed
 
