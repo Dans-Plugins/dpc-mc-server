@@ -13,7 +13,7 @@ The management commands below are used to operate the server from the host machi
 
 ### Stop the server
 
-**Description:** Stop and remove the running server container. The server receives `SIGTERM` and saves before it exits; Docker kills it if it has not exited after 10 seconds.  
+**Description:** Stop and remove the running server container. The server receives `SIGTERM` and saves before it exits; Docker kills it if it has not exited after 10 seconds. The `dpcmcserver` volume that holds the worlds and the rest of the server data is kept; do not add `-v` to `docker compose down`, which deletes it. See [Where the Server Data Is Kept](USER_GUIDE.md#where-the-server-data-is-kept).  
 **Usage:** `./down.sh`
 
 ### Restart the server

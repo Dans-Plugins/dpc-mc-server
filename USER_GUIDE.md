@@ -39,6 +39,19 @@ Starting the server accepts the [Minecraft End User License Agreement](https://a
 
 The server receives `SIGTERM` and shuts down cleanly, saving the worlds and letting plugins run their shutdown handlers. Docker waits 10 seconds for this before killing the server; a large world that takes longer to save is cut off.
 
+`./down.sh` removes the container but keeps the server data, as described under [Where the Server Data Is Kept](#where-the-server-data-is-kept).
+
+### Where the Server Data Is Kept
+
+The worlds, player data, plugin configuration, and plugin databases live in `/dpcmcserver` inside the container, which `compose.yml` mounts from the named Docker volume `dpcmcserver`. Docker Compose prefixes the volume name with the project name, which defaults to the name of the directory the repository was cloned into, so a clone in `dpc-mc-server` stores its data in a volume called `dpc-mc-server_dpcmcserver`. Run `docker volume ls` to see the exact name.
+
+The volume outlives the container. `./down.sh`, `./up.sh`, and `docker compose restart` all leave it in place, and the next start reuses it. Two commands delete it, together with every world on the server, without asking for confirmation:
+
+- `docker compose down -v` (or `--volumes`), which also removes the volumes that `compose.yml` declares
+- `docker volume rm` with the volume's name, which Docker refuses only while a container still uses the volume, so it succeeds once `./down.sh` has removed the container
+
+Use `./down.sh` to stop the server, not `docker compose down -v`. Setting `OVERWRITE_EXISTING_SERVER=true` also deletes the data, while keeping the volume itself; see [Resetting the Server](#resetting-the-server).
+
 ### Restarting the Server
 
 ```
