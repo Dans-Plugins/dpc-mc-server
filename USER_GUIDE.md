@@ -48,7 +48,7 @@ The worlds, player data, plugin configuration, and plugin databases live in `/dp
 The volume outlives the container. `./down.sh`, `./up.sh`, and `docker compose restart` all leave it in place, and the next start reuses it. Two commands delete it, together with every world on the server, without asking for confirmation:
 
 - `docker compose down -v` (or `--volumes`), which also removes the volumes that `compose.yml` declares
-- `docker volume rm` with the volume's name
+- `docker volume rm` with the volume's name, which Docker refuses only while a container still uses the volume, so it succeeds once `./down.sh` has removed the container
 
 Use `./down.sh` to stop the server, not `docker compose down -v`. Setting `OVERWRITE_EXISTING_SERVER=true` also deletes the data, while keeping the volume itself; see [Resetting the Server](#resetting-the-server).
 
