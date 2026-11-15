@@ -66,6 +66,21 @@ This restarts the existing container without recreating it, which is what you wa
 docker logs -f dpc-mc-server
 ```
 
+### Viewing the Web Maps
+
+Dynmap and BlueMap each run their own web server that shows a map of the world in a browser. `compose.yml` publishes the default port of each one to the host:
+
+| Plugin | Toggle | Toggle default | Address |
+|--------|--------|----------------|---------|
+| Dynmap | `DYNMAP_ENABLED` | `true` | `http://localhost:8123` |
+| BlueMap | `BLUEMAP_ENABLED` | `false` | `http://localhost:8100` |
+
+Open the address once the server has finished starting. A port stays published while its plugin is disabled, but nothing answers on it.
+
+BlueMap only works after its `accept-download` setting in `plugins/BlueMap/core.conf` is `true`, because that setting lets it download the Minecraft client resources it uses to render the map. The entrypoint sets it on each start while `BLUEMAP_ENABLED` is `true`, but BlueMap does not create that file until it first loads, so on the first start with BlueMap enabled the setting is not applied yet. Run `docker compose restart` once the server has started for the first time; see [Third-Party Plugin Toggles](CONFIG.md#third-party-plugin-toggles).
+
+The ports are the plugins' own defaults: `webserver-port` in `plugins/dynmap/configuration.txt` and `port` in `plugins/BlueMap/webserver.conf`. If you change either one, also change the matching entry under `ports:` in `compose.yml` and recreate the container with `./up.sh`.
+
 ### Opening a Shell in the Container
 
 ```
