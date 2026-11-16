@@ -13,7 +13,8 @@
 # are the optional integrations they declare on each other), must
 # all be bundled, and must be enabled by the sample.env defaults for every plugin
 # those defaults enable. The ports and container name set in compose.yml are
-# repeated in USER_GUIDE.md and in the documented docker logs/exec commands, and
+# repeated in USER_GUIDE.md and in the documented docker logs/exec commands, the
+# USER_GUIDE.md web map table repeats the map toggles' defaults and ports, and
 # the files the entrypoint rewrites on every start are listed in USER_GUIDE.md.
 # The plugin directories it edits must be spelled as the bundled plugins name
 # themselves in plugin.yml, since Spigot creates each data directory from that name. The directories the
@@ -286,6 +287,23 @@ modifying_server_files_section() {
         in_section && /^#/ { exit }
         in_section { print }
     ' "$USER_GUIDE"
+}
+
+# Function: Print "<toggle> <default> <port>" for every row of the USER_GUIDE.md
+# "### Viewing the Web Maps" table, whose rows read
+# "| <Plugin> | `<TOGGLE>` | `<default>` | `http://localhost:<port>` |"
+web_map_rows() {
+    # The backticks are literal: they delimit each cell value in the table rows
+    # shellcheck disable=SC2016
+    awk '
+        $0 == "### Viewing the Web Maps" { in_section = 1; next }
+        in_section && /^#/ { exit }
+        in_section { print }
+    ' "$USER_GUIDE" | grep -E '^\| [^|]+ \| `[A-Z0-9_]+_ENABLED` \|' | awk -F '`' '{
+        port = $6
+        sub(/^.*:/, "", port)
+        print $2, $4, port
+    }'
 }
 
 # Function: Print the value that post-create.sh assigns to a top-level variable
@@ -606,6 +624,40 @@ test_published_ports_are_documented() {
     fi
 }
 
+# Test: every row of the USER_GUIDE.md "Viewing the Web Maps" table gives the
+# default that sample.env actually sets for its toggle and an address on a host
+# port that compose.yml publishes. The table repeats both values, so a flipped
+# default or a remapped port would otherwise leave it wrong with nothing to flag it.
+test_web_map_table_matches_configuration() {
+    local rows
+    local published
+    local toggle
+    local default
+    local port
+    local actual
+    local mismatched=""
+    rows="$(web_map_rows)"
+    published="$(compose_published_ports)"
+    if [ -z "$rows" ]; then
+        report_fail "no toggle rows found in the '### Viewing the Web Maps' table of USER_GUIDE.md"
+        return
+    fi
+    while read -r toggle default port; do
+        actual="$(sample_env_value "$toggle")"
+        if [ "$default" != "$actual" ]; then
+            mismatched="$mismatched [$toggle: documented default '$default', sample.env sets '$actual']"
+        fi
+        if ! echo "$published" | grep -qxF -- "$port"; then
+            mismatched="$mismatched [$toggle: port '$port' is not published by compose.yml]"
+        fi
+    done <<< "$rows"
+    if [ -z "$mismatched" ]; then
+        report_pass "the USER_GUIDE.md web map table matches the sample.env defaults and compose.yml ports ($(echo "$rows" | awk '{print $1 "=" $2 "@" $3}' | paste -sd ' '))"
+    else
+        report_fail "the USER_GUIDE.md web map table disagrees with the configuration:$mismatched"
+    fi
+}
+
 # Test: every "docker logs" and "docker exec" command in the documentation names
 # the container_name that compose.yml sets, since a renamed container makes each
 # of those commands fail with "No such container"
@@ -815,6 +867,7 @@ test_integration_table_matches_plugin_metadata
 test_required_plugins_are_bundled
 test_default_toggles_satisfy_dependencies
 test_published_ports_are_documented
+test_web_map_table_matches_configuration
 test_documented_container_name_matches_compose
 test_rewritten_files_are_documented
 test_plugin_directories_match_plugin_names
