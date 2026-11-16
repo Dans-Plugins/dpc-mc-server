@@ -75,6 +75,7 @@ Run the wiring tests, which check that:
 - the `CONFIG.md` Plugin Dependencies table matches the `depend:` entries in the bundled JARs' `plugin.yml` files (read with `unzip`), and its Optional Integrations table matches their `softdepend:` entries on other bundled plugins;
 - every plugin named in a `depend:` entry is itself bundled, and the `sample.env` defaults never enable a plugin while disabling one it requires;
 - the ports and container name set in `compose.yml` match those given in the documentation;
+- each row of the "Viewing the Web Maps" table in `USER_GUIDE.md` gives the toggle default that `sample.env` sets and a host port that `compose.yml` publishes;
 - every file `resources/post-create.sh` rewrites on each start is named in the "Modifying Server Files" section of `USER_GUIDE.md`;
 - every `plugins/<directory>/` that `resources/post-create.sh` edits is spelled exactly, case included, as a bundled JAR's `plugin.yml` `name:`;
 - the `SERVER_DIR`, `BUILD_DIR`, and `RESOURCES_DIR` paths in `resources/post-create.sh` match the `Dockerfile` `WORKDIR` and `COPY` lines and the `compose.yml` volume target;
