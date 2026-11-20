@@ -144,6 +144,10 @@ Set `OVERWRITE_EXISTING_SERVER=true` in `.env` and run `./up.sh`. **This deletes
 
 Both steps require `./up.sh` rather than `docker compose restart`, for the reason given under [Restarting the Server](#restarting-the-server). Clearing the variable in `.env` and then merely restarting leaves `OVERWRITE_EXISTING_SERVER=true` in the running container's environment, which wipes the server data again on every subsequent restart.
 
+The value must be exactly `true`, in lowercase. Any other value, such as `True` or `yes`, is silently treated as `false`, and the server starts with its existing data; see [OVERWRITE_EXISTING_SERVER](CONFIG.md#overwrite_existing_server).
+
+A reset also deletes the plugin data directories, including BlueMap's `core.conf`. With `BLUEMAP_ENABLED=true`, the first start after a reset is therefore like the first start of a new server: run `docker compose restart` once the server has started, as described under [Viewing the Web Maps](#viewing-the-web-maps).
+
 ## Permissions
 
 This project does not add any new Minecraft permission nodes itself. Permissions are managed by the individual plugins installed on the server. Refer to each plugin's documentation for details.
