@@ -70,7 +70,7 @@ OPERATOR_LEVEL=4
 
 Note that the value is captured in the container's environment when the container is created. Setting it back to `false` and then running `docker compose restart` does **not** clear it: the old value is still in the running container's environment, and the server data is wiped again on every restart. The container must be recreated with `./up.sh` for the new value to take effect.
 
-Only the exact, lowercase value `true` triggers the reset. Unlike the plugin toggles below, this variable is not validated: any other value, such as `True`, `yes`, `1`, or an empty value, is treated as `false` without an error or a log message, and the existing server is started unchanged.
+Only the exact, lowercase value `true` triggers the reset. Unlike the plugin toggles below, this variable is not validated: any other value, such as `True`, `yes`, `1`, or an empty value, is treated as `false` without an error, and the existing server is started unchanged. The only sign in `docker logs dpc-mc-server` is the `[POST-CREATE] Server is already set up.` line that a normal start also prints.
 
 **Example:**
 
